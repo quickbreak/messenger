@@ -3,6 +3,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
+
 #include <iostream>
 #include <unordered_set>
 
@@ -22,15 +23,15 @@ public:
     WebSocketServer(net::io_context &ioc, tcp::endpoint endpoint);
     /// @brief закрыть соединение
     /// @param session какое соединение
-    void close_connection(std::shared_ptr<WebSocketSession> session);
+    void CloseConnection(std::shared_ptr<WebSocketSession> session);
     /// @brief отправить сообщение всем
     /// @param message какое сообщение
     /// @param sender от кого
-    void broadcast_message(std::string message, std::shared_ptr<WebSocketSession>sender);
+    void BroadcastMessage(std::string message, std::shared_ptr<WebSocketSession>sender);
 
 private:
     tcp::acceptor acceptor_;
     std::unordered_set<std::shared_ptr<WebSocketSession>> sessions_; // список сессий(клиентов)
     /// @brief ждать новое подключение
-    void accept_connection();
+    void AcceptConnection();
 };

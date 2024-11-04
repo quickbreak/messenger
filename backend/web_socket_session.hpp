@@ -3,6 +3,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
+
 #include <queue>
 
 
@@ -25,15 +26,15 @@ public:
     explicit WebSocketSession(tcp::socket socket, WebSocketServer *server);
     
     /// @brief начать слушать
-    void start();
+    void Start();
 
     /// @brief положить сообщение в очередь отправки
     /// @param message мнемоническое название
-    void send_message(std::string message);
+    void SendMessage(std::string message);
 
     /// @brief проверить подключение клиента
     /// @return клиент кодключён?
-    bool alive();
+    bool Alive();
 private:
     /// @brief сокет
     websocket::stream<tcp::socket> ws_;
@@ -44,7 +45,7 @@ private:
     /// @brief мнемоническое название
     WebSocketServer *server_;
     /// @brief отправить очередное сообщение
-    void write_message();
+    void WriteMessage();
     /// @brief прочитать сообщение
-    void read_message();
+    void ReadMessage();
 };

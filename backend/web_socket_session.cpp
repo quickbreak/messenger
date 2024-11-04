@@ -1,6 +1,7 @@
-#include "WebSocketSession.hpp"
-#include "WebSocketServer.hpp"
+#include "web_socket_session.hpp"
+#include "web_socket_server.hpp"
 #include "functions.hpp"
+
 #include <iostream>
 
 
@@ -8,35 +9,35 @@ WebSocketSession::WebSocketSession(tcp::socket socket, WebSocketServer *server)
     : ws_(std::move(socket)), buffer_(), server_(std::move(server)) {}
 
 
-void WebSocketSession::start()
+void WebSocketSession::Start()
 {
     ws_.async_accept([self = shared_from_this()](beast::error_code ec)
         {
             if (!ec) {
-                self->read_message();
+                self->ReadMessage();
             } 
         }
     );
 }
 
 
-bool WebSocketSession::alive() {
+bool WebSocketSession::Alive() {
     return this->ws_.is_open();
 }
 
 
-void WebSocketSession::send_message(std::string message)
+void WebSocketSession::SendMessage(std::string message)
 {
     responses_q_.push(std::move(message)); // кладём очередное сообщение в очередь
     // если до этого очередь была пуста, write_message() остановлена, вызываем её заново
     if (responses_q_.size() == 1)
     {
-        write_message();
+        WriteMessage();
     }
 }
 
 
-void WebSocketSession::write_message()
+void WebSocketSession::WriteMessage()
 {
     if (responses_q_.empty())
     {
@@ -58,20 +59,20 @@ void WebSocketSession::write_message()
             // так как переменная может быть освобождена до того, как асинхронная операция завершится...
             if (!ec) {
                 std::cout << "Отправлено: " << message << std::endl;
-                self->write_message();
+                self->WriteMessage();
             } else if (ec == boost::system::errc::not_connected || ec == websocket::error::closed) {
                 if (self->server_ != NULL) {
-                    self->server_->close_connection(self);
+                    self->server_->CloseConnection(self);
                 }
             } else {
-                std::cerr << "Ошибка при чтении сообщения. Код: " << ec << " Сообщение: " << ec.message() << std::endl;
+                std::cerr << "Ошибка в WebSocketSession::write_message. Код: " << ec << " Сообщение: " << ec.message() << std::endl;
             } 
         }
     );
 }
 
 
-void WebSocketSession::read_message()
+void WebSocketSession::ReadMessage()
 {
     ws_.async_read(buffer_, [self = shared_from_this()](beast::error_code ec, std::size_t bytes_received)
         {
@@ -82,17 +83,17 @@ void WebSocketSession::read_message()
                     self->buffer_.size());
 
                 // формируем ответ и отправляем его
-                std::string response = functions::handle_message(std::move(received_message));
-                self->server_->broadcast_message(std::move(response), self); // больше мы response не используем
+                std::string response = functions::HandleRequest(std::move(received_message));
+                self->server_->BroadcastMessage(std::move(response), self); // больше мы response не используем
 
                 self->buffer_.consume(bytes_received); // очищаем буфер после обработки
-                self->read_message(); // читаем следующее сообщение
+                self->ReadMessage(); // читаем следующее сообщение
             } else if (ec == boost::system::errc::not_connected || ec == websocket::error::closed) {
                 if (self->server_ != NULL) {
-                    self->server_->close_connection(self);
+                    self->server_->CloseConnection(self);
                 }
             } else {
-                std::cerr << "Ошибка при чтении сообщения. Код: " << ec << " Сообщение: " << ec.message() << std::endl;
+                std::cerr << "Ошибка в WebSocketSession::send_message. Код: " << ec << " Сообщение: " << ec.message() << std::endl;
             } 
         }
     );

@@ -1,25 +1,25 @@
-#include "WebSocketServer.hpp"
-#include "WebSocketSession.hpp"
+#include "web_socket_server.hpp"
+#include "web_socket_session.hpp"
 
 
 WebSocketServer::WebSocketServer(net::io_context &ioc, tcp::endpoint endpoint)
     : acceptor_(ioc, endpoint)
 {
-    accept_connection();
+    AcceptConnection();
 }
 
 
-void WebSocketServer::close_connection(std::shared_ptr<WebSocketSession> session)
+void WebSocketServer::CloseConnection(std::shared_ptr<WebSocketSession> session)
 {
     this->sessions_.erase(session);
 }
 
 
-void WebSocketServer::broadcast_message(std::string message, std::shared_ptr<WebSocketSession>sender) 
+void WebSocketServer::BroadcastMessage(std::string message, std::shared_ptr<WebSocketSession>sender) 
 {
     for (auto session: sessions_) {
-        if (session->alive())
-            session->send_message(message);
+        if (session->Alive())
+            session->SendMessage(message);
         else {
             sessions_.erase(session);
         }
@@ -27,7 +27,7 @@ void WebSocketServer::broadcast_message(std::string message, std::shared_ptr<Web
 }
 
 
-void WebSocketServer::accept_connection()
+void WebSocketServer::AcceptConnection()
 {
     acceptor_.async_accept(
         [this](beast::error_code ec, tcp::socket socket)
@@ -40,13 +40,13 @@ void WebSocketServer::accept_connection()
                 // Новая сессия (новый клиент)
                 auto session = std::make_shared<WebSocketSession>(std::move(socket), this);
                 this->sessions_.insert(session);
-                session->start();
+                session->Start();
                 for (auto s: this->sessions_) {
                     std::cout << s.get() << ' ';
                 }
                 std::cout << '\n';
             }
-            this->accept_connection(); // Ждем следующие подключения
+            this->AcceptConnection(); // Ждем следующие подключения
         }
     );
 }

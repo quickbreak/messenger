@@ -1,7 +1,9 @@
 #include "functions.hpp"
 
+#include <boost/json.hpp>
 
-std::string functions::handle_message(std::string message)
+
+std::string functions::GenerateResponse(std::string message)
 {
     auto pos = message.find("PING");
     if (pos != std::string::npos && pos == 0) {
@@ -27,4 +29,16 @@ std::string functions::handle_message(std::string message)
     }
 
     return std::move(message);
+}
+
+namespace json = boost::json;
+
+std::string functions::HandleRequest(std::string request)
+{
+    json::value parsed_json = json::parse(request);
+    json::object obj = std::move(parsed_json.as_object());
+    std::string received_message = obj["message"].as_string().c_str();
+    std::string response_message = GenerateResponse(std::move(received_message));
+    obj["message"] = response_message;
+    return std::move(json::serialize(obj));
 }

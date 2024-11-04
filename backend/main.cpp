@@ -1,4 +1,4 @@
-#include "WebSocketServer.hpp"
+#include "web_socket_server.hpp"
 
 
 int main()
@@ -12,8 +12,8 @@ int main()
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Ошибка: " << e.what() << std::endl;
+        std::cerr << "Ошибка в main: " << e.what() << std::endl;
     }
 }
 
-// g++ main.cpp WebSocketServer.cpp WebSocketSession.cpp functions.cpp -o server
+// g++ main.cpp web_socket_server.cpp web_socket_session.cpp functions.cpp -I/opt/vcpkg/installed/x64-linux/include -L/opt/vcpkg/installed/x64-linux/lib -lboost_json -o server
