@@ -1,28 +1,85 @@
 #include "web_socket_server.hpp"
 #include "web_socket_session.hpp"
+#include "functions.hpp"
+
+#include <boost/json.hpp>
 
 
 WebSocketServer::WebSocketServer(net::io_context &ioc, tcp::endpoint endpoint)
     : acceptor_(ioc, endpoint)
-{
-    AcceptConnection();
-}
+{}
 
 
-void WebSocketServer::CloseConnection(std::shared_ptr<WebSocketSession> session)
+void WebSocketServer::CloseConnection(std::shared_ptr<WebSocketSession> session_ptr)
 {
-    this->sessions_.erase(session);
+    // можно хранить 2: name, ptr и ptr, name. Тогда всегда будет возможность найти по любому из параметров. А что если их станет больше?
+    auto it = this->sessions_.right.find(session_ptr);
+    if (it != this->sessions_.right.end()) {
+        this->sessions_.right.erase(it);
+    }
 }
 
 
 void WebSocketServer::BroadcastMessage(std::string message, std::shared_ptr<WebSocketSession>sender) 
 {
-    for (auto session: sessions_) {
-        if (session->Alive())
-            session->SendMessage(message);
-        else {
-            sessions_.erase(session);
+    std::cerr << "I am in BroadcastMessage\n";
+    for (auto it = sessions_.left.begin(); it != sessions_.left.end();) {
+        std::cerr << "Someone`s in the list\n";
+        if (it->second->Alive()) {
+            std::cerr << "Someone`s Alive\n";
+            it->second->SendMessage(message); // Отправляем сообщение активным сессиям
+            ++it;
+        } else {
+            it = sessions_.left.erase(it); // Удаляем неактивные сессии, обновляя итератор            
         }
+    }
+
+}
+
+
+namespace json = boost::json;
+
+void WebSocketServer::SendMessage(std::string request, std::shared_ptr<WebSocketSession>sender) {
+    std::cerr << "I am in SendMessage\n";
+    json::value parsed_json = json::parse(request);
+    json::object obj = parsed_json.as_object();
+    std::string received_message = obj["message"].as_string().c_str();
+    std::string from = obj["from"].as_string().c_str();
+    std::string to = obj["to"].as_string().c_str();
+    obj["message"] = functions::GenerateResponse(std::move(received_message));
+    //
+    // записываем сообщение в бд
+    //
+    if (to == "all") {
+        this->BroadcastMessage(std::move(json::serialize(obj)), sender);
+    } else {
+        auto it = this->sessions_.left.find(to);
+        if (it != this->sessions_.left.end()) { // если клиент ещё доступен, отправляем ему
+            it->second->SendMessage(std::move(json::serialize(obj)));
+        } else {
+            // на нет и суда нет
+        }
+    } 
+}
+
+
+void WebSocketServer::Authorize(std::string username, std::shared_ptr<WebSocketSession>session_p) {
+    this->sessions_.insert({username, session_p});
+    std::cerr << "+1 Authorized\n";
+}
+
+
+void WebSocketServer::HandleRequest(std::string request, std::shared_ptr<WebSocketSession>sender) {
+    std::cerr << "I am in HandleRequest\n";
+    json::value parsed_json = json::parse(request);
+    json::object obj = parsed_json.as_object();
+    std::string request_type = obj["request_type"].as_string().c_str();
+    if (request_type == "auth") {
+        this->Authorize(obj["username"].as_string().c_str(), sender);
+    } else if (request_type == "msg") {
+        this->SendMessage(request, sender);
+    } else {
+        //
     }
 }
 
@@ -30,7 +87,7 @@ void WebSocketServer::BroadcastMessage(std::string message, std::shared_ptr<WebS
 void WebSocketServer::AcceptConnection()
 {
     acceptor_.async_accept(
-        [this](beast::error_code ec, tcp::socket socket)
+        [self = shared_from_this()](beast::error_code ec, tcp::socket socket)
         {
             if (!ec)
             {
@@ -38,15 +95,10 @@ void WebSocketServer::AcceptConnection()
                 // он у всех 127.0.0.1, пока тестируем локально
 
                 // Новая сессия (новый клиент)
-                auto session = std::make_shared<WebSocketSession>(std::move(socket), this);
-                this->sessions_.insert(session);
+                auto session = std::make_shared<WebSocketSession>(std::move(socket), self);
                 session->Start();
-                for (auto s: this->sessions_) {
-                    std::cout << s.get() << ' ';
-                }
-                std::cout << '\n';
             }
-            this->AcceptConnection(); // Ждем следующие подключения
+            self->AcceptConnection(); // Ждем следующие подключения
         }
     );
 }

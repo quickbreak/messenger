@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-WebSocketSession::WebSocketSession(tcp::socket socket, WebSocketServer *server)
+WebSocketSession::WebSocketSession(tcp::socket socket, std::weak_ptr<WebSocketServer> server)
     : ws_(std::move(socket)), buffer_(), server_(std::move(server)) {}
 
 
@@ -21,7 +21,7 @@ void WebSocketSession::Start()
 }
 
 
-bool WebSocketSession::Alive() {
+bool WebSocketSession::Alive() const {
     return this->ws_.is_open();
 }
 
@@ -61,8 +61,8 @@ void WebSocketSession::WriteMessage()
                 std::cout << "Отправлено: " << message << std::endl;
                 self->WriteMessage();
             } else if (ec == boost::system::errc::not_connected || ec == websocket::error::closed) {
-                if (self->server_ != NULL) {
-                    self->server_->CloseConnection(self);
+                if (auto shared = self->server_.lock()) {                                                                         // CHECK
+                    shared->CloseConnection(self);
                 }
             } else {
                 std::cerr << "Ошибка в WebSocketSession::write_message. Код: " << ec << " Сообщение: " << ec.message() << std::endl;
@@ -78,19 +78,25 @@ void WebSocketSession::ReadMessage()
         {
             if (!ec) {
                 std::cout << "Получено сообщение: " << beast::make_printable(self->buffer_.data()) << std::endl;
-                std::string received_message = std::string(
+                std::string request = std::string(
                     boost::asio::buffer_cast<const char*>(self->buffer_.data()),
                     self->buffer_.size());
 
                 // формируем ответ и отправляем его
-                std::string response = functions::HandleRequest(std::move(received_message));
-                self->server_->BroadcastMessage(std::move(response), self); // больше мы response не используем
-
-                self->buffer_.consume(bytes_received); // очищаем буфер после обработки
-                self->ReadMessage(); // читаем следующее сообщение
+                // std::string response = functions::HandleRequest(std::move(received_message));
+                // self->server_->BroadcastMessage(std::move(response), self); // больше мы response не используем
+                if (auto shared = self->server_.lock()) {
+                    std::cerr << "I am in ReadMessage\n";
+                    shared->HandleRequest(std::move(request), self);
+                    self->buffer_.consume(bytes_received); // очищаем буфер после обработки
+                    self->ReadMessage(); // читаем следующее сообщение
+                } else {
+                    std::cerr << "Error in ReadMessage\n";
+                }
+                
             } else if (ec == boost::system::errc::not_connected || ec == websocket::error::closed) {
-                if (self->server_ != NULL) {
-                    self->server_->CloseConnection(self);
+                if (auto shared = self->server_.lock()) {
+                    shared->CloseConnection(self);
                 }
             } else {
                 std::cerr << "Ошибка в WebSocketSession::send_message. Код: " << ec << " Сообщение: " << ec.message() << std::endl;

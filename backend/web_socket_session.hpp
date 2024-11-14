@@ -5,6 +5,7 @@
 #include <boost/beast.hpp>
 
 #include <queue>
+#include <memory>
 
 
 namespace beast = boost::beast;         // Boost.Beast namespace
@@ -21,20 +22,20 @@ class WebSocketSession : public std::enable_shared_from_this<WebSocketSession>
 {
 public:
     /// @brief конструктор
-    /// @param socket мнемоническое название
-    /// @param server мнемоническое название
-    explicit WebSocketSession(tcp::socket socket, WebSocketServer *server);
+    /// @param socket соке
+    /// @param server серве
+    explicit WebSocketSession(tcp::socket socket, std::weak_ptr<WebSocketServer> server);
     
     /// @brief начать слушать
     void Start();
 
     /// @brief положить сообщение в очередь отправки
-    /// @param message мнемоническое название
+    /// @param message сообщение
     void SendMessage(std::string message);
 
     /// @brief проверить подключение клиента
     /// @return клиент кодключён?
-    bool Alive();
+    bool Alive() const;
 private:
     /// @brief сокет
     websocket::stream<tcp::socket> ws_;
@@ -42,8 +43,8 @@ private:
     boost::beast::flat_buffer buffer_;
     /// @brief очередь сообщений для асинхронной отправки
     std::queue<std::string> responses_q_;
-    /// @brief мнемоническое название
-    WebSocketServer *server_;
+    /// @brief указатель на сервер  
+    std::weak_ptr<WebSocketServer> server_;
     /// @brief отправить очередное сообщение
     void WriteMessage();
     /// @brief прочитать сообщение

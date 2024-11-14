@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Чат</title>
+    <link rel="icon" href="./favicon.png" type="image/png">
+    <style>
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Блок для авторизации -->
+    <div id="authPage">
+        <h2>Вход в чат</h2>
+        <input type="text" id="username" placeholder="Введите ваше имя" required>
+        <button onclick="authorize()">Войти</button>
+    </div>
+
+    <!-- Блок для чата -->
+    <div id="chatPage" class="hidden">
+        <h2>Чат</h2>
+        <div id="messageOutput"></div>
+        <input type="text" id="toInput" placeholder="Кому (оставьте пустым для всех)">
+        <input type="text" id="messageInput" placeholder="Введите сообщение">
+        <button onclick="sendMessage()">Отправить</button>
+    </div>
+
+    <script>
+        let socket = null;
+        let clientId = "";
+
+        // Функция для авторизации
+        function authorize() {
+            const usernameInput = document.getElementById('username');
+            clientId = usernameInput.value.trim();
+            if (clientId === "") {
+                alert("Введите имя!");
+                return;
+            }
+            localStorage.setItem("clientId", clientId);
+            document.getElementById('authPage').classList.add('hidden');
+            document.getElementById('chatPage').classList.remove('hidden');
+            createWebSocketClient();
+        }
+
+        // Функция создания WebSocket-клиента
+        function createWebSocketClient() {
+            socket = new WebSocket("ws://localhost:8080");
+
+            socket.onopen = () => {
+                console.log("Подключено к WebSocket серверу");
+
+                // Отправка сообщения авторизации после подключения
+                const authMessage = {
+                    request_type: "auth",
+                    username: clientId
+                };
+                socket.send(JSON.stringify(authMessage));
+            };
+
+            socket.onmessage = (event) => {
+                const messageOutput = document.getElementById("messageOutput");
+                const data = JSON.parse(event.data);
+
+                // Отображение сообщения в чате
+                const sender = data.from === clientId ? "Вы" : data.from;
+                const message = `<strong>${sender}</strong>: ${data.message}<br>`;
+                messageOutput.innerHTML += message;
+                messageOutput.scrollTop = messageOutput.scrollHeight;
+            };
+
+            socket.onerror = (error) => {
+                console.error("Ошибка WebSocket:", error);
+            };
+
+            socket.onclose = () => {
+                console.log("Соединение закрыто");
+            };
+        }
+
+        // Функция отправки сообщения
+        function sendMessage() {
+            const toInput = document.getElementById("toInput");
+            const messageInput = document.getElementById("messageInput");
+            const messageText = messageInput.value.trim();
+            const recipient = toInput.value.trim();
+
+            if (messageText === "") {
+                alert("Введите сообщение!");
+                return;
+            }
+
+            const message = {
+                request_type: "msg",
+                from: clientId,
+                to: recipient || "all",
+                message: messageText
+            };
+
+            // Добавляем проверку состояния WebSocket перед отправкой
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify(message));
+                messageInput.value = "";
+            } else if (socket && socket.readyState !== WebSocket.OPEN) {
+                console.error("Соединение с сервером ещё не установлено. Повторная попытка...");
+                setTimeout(() => sendMessage(), 500); // Повторяем попытку отправить сообщение через 500 мс
+            } else {
+                console.error("Соединение с сервером не установлено.");
+            }
+        }
+
+    </script>
+</body>
+</html>
