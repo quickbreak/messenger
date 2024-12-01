@@ -9,6 +9,8 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 
+#include "connector.hpp"
+
 
 namespace beast = boost::beast;         // Boost.Beast namespace
 namespace net = boost::asio;            // Boost.Asio namespace
@@ -34,6 +36,7 @@ public:
     void HandleRequest(std::string request, std::shared_ptr<WebSocketSession>sender);
 
 private:
+    chat::ChatDatabase db_connector_;
     tcp::acceptor acceptor_;
     /// @brief список активных сессий(клиентов). Имя пользователя -> указатель на объект сессии
     // std::unordered_map<std::string, std::shared_ptr<WebSocketSession>> sessions_;
@@ -53,4 +56,8 @@ private:
     /// @param request 
     /// @param session_p 
     void Authorize(std::string request, std::shared_ptr<WebSocketSession>session_p);
+    /// @brief отправить только что вошедшему клиенту историю его сообщений
+    /// @param username имя пользователя
+    /// @param session_p указатель на объект сессии
+    void LoadHistory(const std::string& username, std::shared_ptr<WebSocketSession>session_p);
 };

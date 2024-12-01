@@ -1,4 +1,4 @@
-#include "web_socket_server.hpp"
+#include "./web_socket_server.hpp"
 
 
 int main()
@@ -6,7 +6,7 @@ int main()
     try
     {
         net::io_context ioc;
-        tcp::endpoint endpoint{tcp::v4(), 8080};
+        tcp::endpoint endpoint{tcp::v4(), 3000};
         auto server = std::make_shared<WebSocketServer>(ioc, endpoint);
         server->AcceptConnection();
         ioc.run();

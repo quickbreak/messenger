@@ -1,0 +1,104 @@
+#include "connector.hpp"
+
+namespace chat
+{
+    ChatDatabase::ChatDatabase(const std::string& connection_string)
+        : db_connection_(connection_string) {
+        if (!db_connection_.is_open()) {
+            throw std::runtime_error("Failed to connect to the database");
+        }
+    }
+
+
+    void ChatDatabase::InsertMessage(const std::string& from, const std::string& to, const std::string& content) {
+        pqxx::work transaction(db_connection_);
+
+        std::string query = R"(
+            INSERT INTO messages (from_user, to_user, content, timestamp)
+            VALUES ($1, $2, $3, NOW())
+        )";
+
+        transaction.exec_params(query, from, to, content);
+        transaction.commit();
+    }
+
+
+    boost::json::array ChatDatabase::GetMessagesForUser(const std::string& username) {
+        pqxx::work transaction(db_connection_);
+        std::string query = R"(
+            SELECT from_user, to_user, content, timestamp
+            FROM messages
+            WHERE from_user = $1 OR to_user = $1
+            ORDER BY timestamp
+        )";
+
+        pqxx::result result = transaction.exec_params(query, username);
+        transaction.commit();
+
+        std::vector<Message> messages;
+        for (const auto& row : result) {
+            messages.push_back({
+                row["from_user"].c_str(),
+                row["to_user"].c_str(),
+                row["content"].c_str(),
+                row["timestamp"].c_str()
+            });
+        }
+
+        return std::move(SerializeMessages(messages));
+    }
+
+
+    boost::json::array ChatDatabase::GetMessagesBetweenUsers(const std::string& user1, const std::string& user2) {
+        pqxx::work transaction(db_connection_);
+        std::string query = R"(
+            SELECT from_user, to_user, content, timestamp
+            FROM messages
+            WHERE (from_user = $1 AND to_user = $2)
+            OR (from_user = $2 AND to_user = $1)
+            ORDER BY timestamp
+        )";
+
+        pqxx::result result = transaction.exec_params(query, user1, user2);
+        transaction.commit();
+
+        std::vector<Message> messages;
+        for (const auto& row : result) {
+            messages.push_back({
+                row["from_user"].c_str(),
+                row["to_user"].c_str(),
+                row["content"].c_str(),
+                row["timestamp"].c_str()
+            });
+        }
+
+        return std::move(SerializeMessages(messages));
+    }
+
+
+    void ChatDatabase::DeleteMessagesBetweenUsers(const std::string& user1, const std::string& user2) {
+        pqxx::work transaction(db_connection_);
+        std::string query = R"(
+            DELETE FROM messages
+            WHERE (from_user = $1 AND to_user = $2)
+            OR (from_user = $2 AND to_user = $1)
+        )";
+
+        transaction.exec_params(query, user1, user2);
+        transaction.commit();
+    }
+
+
+    boost::json::array ChatDatabase::SerializeMessages(const std::vector<Message>& messages) {
+        boost::json::array json_array;
+        for (const auto& msg : messages) {
+            boost::json::object json_msg;
+            json_msg["from"] = msg.from;
+            json_msg["to"] = msg.to;
+            json_msg["message"] = msg.content;
+            json_msg["timestamp"] = msg.timestamp;
+            json_array.push_back(json_msg);
+        }
+        return std::move(json_array);
+    }
+} // namespace chat
