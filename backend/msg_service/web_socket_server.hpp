@@ -56,8 +56,12 @@ private:
     /// @param request 
     /// @param session_p 
     void Authorize(std::string request, std::shared_ptr<WebSocketSession>session_p);
-    /// @brief отправить только что вошедшему клиенту историю его сообщений
+    /// @brief отправить клиенту историю одного из его чатов
+    /// @param request полученный запрос
+    /// @param session_p указатель на объект сессии
+    void LoadHistory(const std::string& request, std::shared_ptr<WebSocketSession>session_p);
+    /// @brief отправить только что вошедшему клиенту множество его чатов
     /// @param username имя пользователя
     /// @param session_p указатель на объект сессии
-    void LoadHistory(const std::string& username, std::shared_ptr<WebSocketSession>session_p);
+    void GetChatsList(std::string username, std::shared_ptr<WebSocketSession>session_p);
 };

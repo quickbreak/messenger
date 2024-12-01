@@ -52,14 +52,3 @@ input, button {
     width: 100%;
     box-sizing: border-box;
 }
-
-#messageOutput {
-    width: 100%; /* Ширина равна 100% от контейнера */
-    height: 200px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    padding: 10px;
-    background-color: #fafafa;
-    margin-bottom: 10px;
-    box-sizing: border-box; /* Включает padding и border в расчет ширины */      
-}

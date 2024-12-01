@@ -37,12 +37,12 @@ namespace chat
 
         std::vector<Message> messages;
         for (const auto& row : result) {
-            messages.push_back({
+            messages.push_back(Message (
                 row["from_user"].c_str(),
                 row["to_user"].c_str(),
                 row["content"].c_str(),
                 row["timestamp"].c_str()
-            });
+            ));
         }
 
         return std::move(SerializeMessages(messages));
@@ -76,6 +76,29 @@ namespace chat
     }
 
 
+    boost::json::array ChatDatabase::GetChatsList(const std::string& username) {        
+        pqxx::work transaction(db_connection_);
+        std::string query = R"(
+            SELECT DISTINCT from_user, to_user
+            FROM messages
+            WHERE from_user = $1 OR to_user = $1
+        )";
+        pqxx::result result = transaction.exec_params(query, username);
+        transaction.commit();
+
+        std::vector<Chat> chats;
+        for (const auto& row : result) {
+            std::string user2 = (row["from_user"].as<std::string>() == username) ? row["to_user"].as<std::string>() : row["from_user"].as<std::string>();
+            chats.push_back(Chat (
+                user2,
+                username,
+                user2
+            ));
+        }
+        return std::move(SerializeChats(chats));
+    }
+
+
     void ChatDatabase::DeleteMessagesBetweenUsers(const std::string& user1, const std::string& user2) {
         pqxx::work transaction(db_connection_);
         std::string query = R"(
@@ -97,6 +120,19 @@ namespace chat
             json_msg["to"] = msg.to;
             json_msg["message"] = msg.content;
             json_msg["timestamp"] = msg.timestamp;
+            json_array.push_back(json_msg);
+        }
+        return std::move(json_array);
+    }
+
+
+    boost::json::array ChatDatabase::SerializeChats(const std::vector<Chat>& chats) {
+        boost::json::array json_array;
+        for (const auto& chat : chats) {
+            boost::json::object json_msg;
+            json_msg["id"] = chat.id;
+            json_msg["user2"] = chat.user2;
+            json_msg["user1"] = chat.user1;
             json_array.push_back(json_msg);
         }
         return std::move(json_array);

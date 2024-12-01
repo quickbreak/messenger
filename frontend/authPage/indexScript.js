@@ -33,7 +33,7 @@ form.addEventListener('submit', async function (evt) {
         alert(data.comment);
         // Сохраняем clientId в localStorage и переходим на страницу чата
         localStorage.setItem("clientId", clientId);
-        window.location.href = "./new-life/chat.html";
+        window.location.href = "../chatPage/chat.html";
       } else {
         alert(data.comment || "Не удалось авторизоваться.");
       }

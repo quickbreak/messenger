@@ -78,12 +78,30 @@ void WebSocketServer::Authorize(std::string username, std::shared_ptr<WebSocketS
     std::cerr << "+1 Authorized\n";
 }
 
-void WebSocketServer::LoadHistory(const std::string& username, std::shared_ptr<WebSocketSession>session_p) {
+void WebSocketServer::LoadHistory(const std::string& request, std::shared_ptr<WebSocketSession>session_p) {
+    json::value parsed_json = json::parse(request);
+    json::object req_obj = parsed_json.as_object();
+    std::string username = req_obj["username"].as_string().c_str();
+    std::string chat_with = req_obj["chat_with"].as_string().c_str();
+
     boost::json::object obj;
     obj["request_type"] = "history";
-    obj["history"] = this->db_connector_.GetMessagesForUser(username);
+    obj["chat_with"] = chat_with;
+    obj["history"] = this->db_connector_.GetMessagesBetweenUsers(username, chat_with);
 
-    // отправить вошедшему клиенту его историю 
+    // отправить клиенту username историю его общенияя с chat_with
+    auto it = this->sessions_.left.find(username);
+    if (it != this->sessions_.left.end()) { // если клиент ещё доступен, отправляем ему
+        it->second->SendMessage(json::serialize(obj));
+    }
+}
+
+void WebSocketServer::GetChatsList(const std::string username, std::shared_ptr<WebSocketSession>session_p) {
+    boost::json::object obj;
+    obj["request_type"] = "chats";
+    obj["chats"] = this->db_connector_.GetChatsList(username);
+    
+    // отправить клиенту username список его чатов
     auto it = this->sessions_.left.find(username);
     if (it != this->sessions_.left.end()) { // если клиент ещё доступен, отправляем ему
         it->second->SendMessage(json::serialize(obj));
@@ -97,11 +115,11 @@ void WebSocketServer::HandleRequest(std::string request, std::shared_ptr<WebSock
     std::string request_type = obj["request_type"].as_string().c_str();
     if (request_type == "auth") {
         this->Authorize(obj["username"].as_string().c_str(), sender);
-        this->LoadHistory(obj["username"].as_string().c_str(), sender);
+        this->GetChatsList(obj["username"].as_string().c_str(), sender);
+    } else if (request_type == "history") {
+        this->LoadHistory(request, sender);
     } else if (request_type == "msg") {
-        this->SendMessage(request, sender);
-    } else {
-        //
+       this->SendMessage(request, sender);
     }
 }
 

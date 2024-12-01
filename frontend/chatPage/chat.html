@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Чат</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" href="../favicon.png" type="image/png">
+</head>
+<body>
+  <main class="chat-app">
+    <aside class="chat-list">
+      <h2>Чаты</h2>
+      <ul id="chatList" class="ulist">
+        <!-- Шаблон для списка чатов -->
+        <template id="chatItemTemplate">
+          <li class="chat-item" data-chat-id="">
+            <span class="chat-name"></span>
+          </li>
+        </template>
+      </ul>
+    </aside>
+
+    <section class="chat-window">
+      <h2 id="chatTitle">Выберите чат</h2>
+      <ul id="messageList" class="chat-messages ulist">
+        <!-- Шаблон для сообщения -->
+        <template id="messageItemTemplate">
+          <li class="message-item">
+            <p class="message"></p>
+          </li>
+        </template>
+      </ul>
+      <form id="sendMessageForm" class="message-form">
+        <!-- <input type="text" id="toInput" placeholder="Кому (оставьте пустым для всех)"> -->
+        <input type="text" id="messageInput" placeholder="Введите сообщение" required>
+        <button type="submit" id="sendMessageButton">Отправить</button>
+      </form>
+    </section>
+  </main>
+  <script src="./chatScript.js"></script>
+</body>
+</html>
