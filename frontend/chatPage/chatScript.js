@@ -8,7 +8,7 @@ const messageList = document.getElementById('messageList');
 const messageItemTemplate = document.getElementById('messageItemTemplate');
 const sendMessageForm = document.getElementById('sendMessageForm');
 // const toInput = document.getElementById('toInput');
-const messageInput = document.getElementById('messageInput');
+const messageInput = document.querySelector('.message-input');
 
 let activeChat = null;
 let chats = {}; // Содержит все чаты и их сообщения
@@ -127,13 +127,19 @@ function createWebSocketClient() {
     console.log('Сообщение от сервера:', data);
 
     if (data.request_type === 'msg') {
-      addMessage(data.to === clientId ? data.from : data.to, data.from, data.message);
+      const chatId = data.to === clientId ? data.from : data.to;
+      // если это первое сообщение от адресанта, надо добавить новый чат
+      addChat(chatId, chatId);
+      // добавить сообщение
+      if (data.from != data.to) {
+        addMessage(chatId, data.from, data.message);
+      }
     } else if (data.request_type === 'history') {
       const chatId = data.chat_with;
       const messages = data.history || [];
       chats[chatId] = [];
       messages.forEach((msg) => {
-        addMessage(chatId, msg.from, msg.message, msg.from === clientId ? 'sent' : 'received');
+        addMessage(chatId, msg.from, msg.message, msg.from === clientId && msg.from != msg.to ? 'sent' : 'received');
       });
       // отобразить сообщения
       renderMessages(activeChat);
@@ -149,19 +155,23 @@ function createWebSocketClient() {
 
   socket.onclose = () => {
     console.log('WebSocket соединение закрыто');
-    localStorage.removeItem('clientId');
+    /// localStorage.removeItem('clientId');
   };
 }
 
 // Отправка сообщения
 sendMessageForm.addEventListener('submit', (evt) => {
   evt.preventDefault();
-  const messageText = messageInput.value.trim();
+
   const recipient = activeChat;
+  
+  if (recipient == null) {
+    return;
+  }
 
+  const messageText = messageInput.value.trim();
   if (messageText) {
-    addMessage(activeChat, 'Вы', messageText, 'sent');
-
+    addMessage(activeChat, clientId, messageText, clientId != activeChat ? 'sent' : 'received');
     const message = {
       request_type: 'msg',
       from: clientId,
@@ -178,8 +188,57 @@ sendMessageForm.addEventListener('submit', (evt) => {
   }
 });
 
+
+// Найти пользователя username
+async function findUser(username) {
+  try {
+    // Отправляем HTTP GET-запрос на сервер
+    const response = await fetch(`http://${host}:5000/find?username=${encodeURIComponent(username)}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json', // Указывает, что клиент ожидает получить JSON
+      }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`Ответ сервера:`, data);
+
+      if (data.status == 'success') {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      console.error(`Ошибка HTTP: ${response.status}`);
+      const data = await response.json();
+      console.log(`Ответ сервера:`, data);
+      alert(data.comment || "Не удалось авторизоваться.");
+    }
+  } catch (error) {
+    console.error("Ошибка при авторизации:", error);
+    alert("Произошла ошибка. Проверьте соединение с сервером.");
+  }
+} 
+
+
+const findUserForm = document.querySelector('.find-form');
+const findUserButton = findUserForm.querySelector('.find-user-button');
+const usernameInput = findUserForm.querySelector('.username-input');
+// Поиск собеседника
+findUserButton.addEventListener('click', function(evt) {
+  evt.preventDefault();
+  const username = usernameInput.value.trim();
+  if (findUser(username)) {
+    addChat(username, username);
+  } else {
+    alert('Пользователь с таким именем не зарегистрирован');
+  }
+});
+
 // При загрузке страницы
 window.onload = function () {
   clientId = localStorage.getItem('clientId');
+  console.log(clientId);
   createWebSocketClient();
 };

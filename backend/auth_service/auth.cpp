@@ -1,53 +1,97 @@
-#include <pqxx/pqxx>
-#include <string>
-#include <stdexcept>
-#include <iostream>
+#include "auth.hpp"
 
 
 namespace auth {
-  class AuthService {
-  public:
-    // Конструктор, принимает строку подключения к БД
-    explicit AuthService(const std::string& conn_str) 
-      : conn(conn_str) {}
+    AuthService::AuthService(const std::string& conn_str) : 
+        conn_(conn_str) 
+    {}
 
-    // Метод для проверки логина и пароля
-    bool Authenticate(const std::string& username, const std::string& password) {
+
+    bool AuthService::Authenticate(const std::string& username, const std::string& password) {
         try {
-            pqxx::work txn(conn);
-            // std::cout << "Ошибка после подключения\n";
-
             const std::string query = R"(
             SELECT password 
             FROM users
             WHERE username = $1
             )";
-
+            
+            pqxx::work txn(conn_);
             pqxx::result result = txn.exec_params(query, username);
+            txn.commit();
 
-            if (result.empty()) {
-            // Пользователь не найден
+            if (result.empty()) { // Пользователь не найден
                 return false;
             }
 
             std::string stored_hash = result[0]["password"].as<std::string>();
 
-            // Проверяем введённый пароль
             return VerifyPassword(password, stored_hash);
 
         } catch (const std::exception& e) {
             throw std::runtime_error("Ошибка при аутентификации: " + std::string(e.what()));
         }
-    }
+    };
 
 
-  private:
-    pqxx::connection conn;
+    bool AuthService::Register(const std::string& username, const std::string& password) {
+        try {
+            const std::string check_query = R"(
+            SELECT username 
+            FROM users
+            WHERE username = $1
+            )";
 
-    // Пример функции для проверки пароля (добавьте свою логику хэширования)
-    bool VerifyPassword(const std::string& password, const std::string& stored_hash) {
-      // Для упрощения, сравниваем напрямую (НЕ ДЕЛАЙТЕ ТАК В РЕАЛЬНЫХ ПРОЕКТАХ!)
-      return password == stored_hash;
-    }
-  };
+            pqxx::work txn(conn_);
+            pqxx::result result = txn.exec_params(check_query, username);
+            txn.commit();
+
+            if (result.empty()) { // логин не занят, регистрируем нового пользователя
+                const std::string register_query = R"(
+                INSERT INTO users 
+                (username, password)
+                VALUES ($1, $2)
+                )";
+
+                pqxx::work txn(conn_);
+                pqxx::result result = txn.exec_params(register_query, username, password);
+                txn.commit();
+                
+                return true; 
+            } else { // логин занят
+                return false;
+            }
+
+        } catch (const std::exception& e) {
+            throw std::runtime_error("Ошибка при регистрации: " + std::string(e.what()));
+        }
+    };
+
+
+    bool AuthService::Find(const std::string& username) {
+        try {
+            const std::string check_query = R"(
+            SELECT username 
+            FROM users
+            WHERE username = $1
+            )";
+
+            pqxx::work txn(conn_);
+            pqxx::result result = txn.exec_params(check_query, username);
+            txn.commit();
+
+            if (!result.empty()) { // пользователь найден               
+                return true; 
+            } else { // такого пользователя нет                
+                return false;
+            }
+
+        } catch (const std::exception& e) {
+            throw std::runtime_error("Ошибка при регистрации: " + std::string(e.what()));
+        }
+    };
+
+
+    bool AuthService::VerifyPassword(const std::string& password, const std::string& stored_hash) {
+        return password == stored_hash;
+    };
 } // namespace auth

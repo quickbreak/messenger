@@ -1,9 +1,7 @@
 const host = 'localhost';
+let clientId = '';
 
-let clientId = "";
-
-// Авторизация
-const form = document.querySelector('#authorizationForm');
+const form = document.querySelector('#registrationForm');
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
 
@@ -12,11 +10,11 @@ form.addEventListener('submit', async function (evt) {
 
   clientId = usernameInput.value.trim();
   password = passwordInput.value.trim();
-  console.log(`Авторизация: введённые данные: ${clientId}, ${password}`);
+  console.log(`Регистрация: введённые данные: ${clientId}, ${password}`);
 
   try {
     // Отправляем HTTP POST-запрос на сервер
-    const response = await fetch(`http://${host}:5000/auth`, {
+    const response = await fetch(`http://${host}:5000/reg`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -28,8 +26,7 @@ form.addEventListener('submit', async function (evt) {
       const data = await response.json();
       console.log(`Ответ сервера:`, data);
 
-      // Предполагаем, что сервер возвращает статус авторизации
-      if (data.status == "success") {
+      if (data.status == 'success') {
         alert(data.comment);
         // Сохраняем clientId в localStorage и переходим на страницу чата
         localStorage.setItem("clientId", clientId);
@@ -47,8 +44,4 @@ form.addEventListener('submit', async function (evt) {
     console.error("Ошибка при авторизации:", error);
     alert("Произошла ошибка. Проверьте соединение с сервером.");
   }
-});
-
-document.querySelector('.register').addEventListener('click', function() {
-  window.location.href = "../regPage/reg.html";
 });

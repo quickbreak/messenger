@@ -70,21 +70,28 @@ body {
   gap: 10px;
 }
 
-input {
+.message-input {
   flex: 1;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
 }
 
+.message-input:focus {
+  outline: none; /* Убираем стандартную обводку */
+  border: 1px solid #007bff; 
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.5); /* Лёгкая подсветка */
+}
+
 button {
-  padding: 10px 20px;
+  padding: 5px 10px;
   background-color: #007bff;
   color: #fff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
+  font-size: 14px;
 }
 
 button:hover {
@@ -144,4 +151,45 @@ button:hover {
   line-height: 1.4;
 }
 
+.find-form {
+  display: flex;
+  gap: 5px; /* Расстояние между полем ввода и кнопкой */
+  margin-bottom: 10px; /* Отступ от формы до списка чатов */
+}
+
+.find-form .username-input {
+  flex: 1; /* Поле ввода занимает всё доступное пространство */
+  padding: 5px; /* Уменьшение внутреннего отступа */
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.find-form .find-user-button {
+  padding: 5px 10px; /* Уменьшение размера кнопки */
+  font-size: 14px; /* Небольшой размер текста */
+  background-color: #007bff; /* Синий фон */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.find-form .find-user-button:hover {
+  background-color: #0056b3; /* Более тёмный синий при наведении */
+}
+
+/* .username-input:valid {
+  border-bottom: 1px solid green;
+} */
+
+/* .username-input:invalid {
+  border-bottom: 1px solid red;
+} */
+
+.username-input:focus {
+  outline: none; /* Убираем стандартную обводку */
+  border: 1px solid #007bff; 
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.5); /* Лёгкая подсветка */
+}
 

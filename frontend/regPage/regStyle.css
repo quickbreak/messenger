@@ -8,7 +8,7 @@ body {
     margin: 0;
 }
 
-.authorization-form {
+.registration-form {
     background-color: #fff;
     padding: 20px;
     border-radius: 8px;
@@ -41,20 +41,10 @@ button {
 }
 
 button:hover {
-    background-color: #0560c1;
+    background-color: #0056b3;
 }
 
 input, button {
     width: 100%;
     box-sizing: border-box;
 }
-
-.register {
-    margin-top: 5px;
-    background-color: #05bc54;
-}
-
-.register:hover {
-    background-color: #008e3d;
-}
-

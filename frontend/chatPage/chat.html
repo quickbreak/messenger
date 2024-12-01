@@ -10,7 +10,13 @@
 <body>
   <main class="chat-app">
     <aside class="chat-list">
-      <h2>Чаты</h2>
+      <section class="chats-list">
+        <h2>Чаты</h2>
+        <form id="find-user-form" class="find-form">
+          <input type="text" class="username-input" placeholder="Поиск" required>
+          <button type="click" class="find-user-button">Найти</button>
+        </form>
+      </section>
       <ul id="chatList" class="ulist">
         <!-- Шаблон для списка чатов -->
         <template id="chatItemTemplate">
@@ -33,7 +39,7 @@
       </ul>
       <form id="sendMessageForm" class="message-form">
         <!-- <input type="text" id="toInput" placeholder="Кому (оставьте пустым для всех)"> -->
-        <input type="text" id="messageInput" placeholder="Введите сообщение" required>
+        <input type="text" class="message-input" placeholder="Сообщение" required>
         <button type="submit" id="sendMessageButton">Отправить</button>
       </form>
     </section>
