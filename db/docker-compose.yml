@@ -1,0 +1,17 @@
+services:
+  postgres:
+    build: .
+    container_name: my-postgres-container
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+    # user: "999:999"
+    volumes:
+      # - ./postgres-data:/var/lib/postgresql/data так я бы написал, если бы делал это не с wsl. (а так не хватает прав)
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
