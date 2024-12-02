@@ -44,7 +44,10 @@ namespace chat {
         void DeleteMessagesBetweenUsers(const std::string& user1, const std::string& user2);
 
     private:
-        pqxx::connection db_connection_;
+        // активное соединение с бд
+        std::unique_ptr<pqxx::connection> db_connection_;
+        /// @brief строка для соединения с бд
+        std::string connection_string_;
         /// @brief преобразовать вектор Сообщений в JSON-array
         /// @param messages вектор Сообщений
         /// @return JSON-array
@@ -53,5 +56,7 @@ namespace chat {
         /// @param chats вектор Чатов
         /// @return JSON-array
         boost::json::array SerializeChats(const std::vector<Chat>& chats);
+        /// @brief проверить соединение с бд
+        void EnsureConnection();
     };
 } // namespace chat

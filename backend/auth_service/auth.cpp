@@ -15,9 +15,9 @@ namespace auth {
             WHERE username = $1
             )";
             
-            pqxx::work txn(conn_);
-            pqxx::result result = txn.exec_params(query, username);
-            txn.commit();
+            pqxx::work transaction(conn_);
+            pqxx::result result = transaction.exec_params(query, username);
+            transaction.commit();
 
             if (result.empty()) { // Пользователь не найден
                 return false;
@@ -41,9 +41,9 @@ namespace auth {
             WHERE username = $1
             )";
 
-            pqxx::work txn(conn_);
-            pqxx::result result = txn.exec_params(check_query, username);
-            txn.commit();
+            pqxx::work transaction(conn_);
+            pqxx::result result = transaction.exec_params(check_query, username);
+            transaction.commit();
 
             if (result.empty()) { // логин не занят, регистрируем нового пользователя
                 const std::string register_query = R"(
@@ -52,9 +52,9 @@ namespace auth {
                 VALUES ($1, $2)
                 )";
 
-                pqxx::work txn(conn_);
-                pqxx::result result = txn.exec_params(register_query, username, password);
-                txn.commit();
+                pqxx::work transaction(conn_);
+                pqxx::result result = transaction.exec_params(register_query, username, password);
+                transaction.commit();
                 
                 return true; 
             } else { // логин занят
@@ -75,9 +75,9 @@ namespace auth {
             WHERE username = $1
             )";
 
-            pqxx::work txn(conn_);
-            pqxx::result result = txn.exec_params(check_query, username);
-            txn.commit();
+            pqxx::work transaction(conn_);
+            pqxx::result result = transaction.exec_params(check_query, username);
+            transaction.commit();
 
             if (!result.empty()) { // пользователь найден               
                 return true; 

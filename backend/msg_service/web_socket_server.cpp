@@ -99,7 +99,9 @@ void WebSocketServer::LoadHistory(const std::string& request, std::shared_ptr<We
 void WebSocketServer::GetChatsList(const std::string username, std::shared_ptr<WebSocketSession>session_p) {
     boost::json::object obj;
     obj["request_type"] = "chats";
+    std::cout << "I`m in WSServer::GetChatsList\n";
     obj["chats"] = this->db_connector_.GetChatsList(username);
+    std::cout << "I`m in WSServer::GetChatsList. Chats got\n";
     
     // отправить клиенту username список его чатов
     auto it = this->sessions_.left.find(username);

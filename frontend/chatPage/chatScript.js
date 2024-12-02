@@ -189,6 +189,9 @@ sendMessageForm.addEventListener('submit', (evt) => {
 });
 
 
+const findUserForm = document.querySelector('.find-form');
+const findUserButton = findUserForm.querySelector('.find-user-button');
+const usernameInput = findUserForm.querySelector('.username-input');
 // Найти пользователя username
 async function findUser(username) {
   try {
@@ -200,41 +203,41 @@ async function findUser(username) {
       }
     });
 
-    if (response.ok) {
+    if (response.ok) { // response.code === 200
+      // очистить поле ввода
+      usernameInput.value = '';
       const data = await response.json();
       console.log(`Ответ сервера:`, data);
-
-      if (data.status == 'success') {
-        return true;
-      } else {
-        return false;
-      }
+      return true;
     } else {
       console.error(`Ошибка HTTP: ${response.status}`);
       const data = await response.json();
       console.log(`Ответ сервера:`, data);
-      alert(data.comment || "Не удалось авторизоваться.");
+      alert(data.comment || "Не удалось найти пользователя.");
+      // console.log('return false');
+      return false;
     }
   } catch (error) {
     console.error("Ошибка при авторизации:", error);
     alert("Произошла ошибка. Проверьте соединение с сервером.");
+    return false;
   }
 } 
 
 
-const findUserForm = document.querySelector('.find-form');
-const findUserButton = findUserForm.querySelector('.find-user-button');
-const usernameInput = findUserForm.querySelector('.username-input');
 // Поиск собеседника
-findUserButton.addEventListener('click', function(evt) {
+findUserForm.addEventListener('submit', async function(evt) {
   evt.preventDefault();
   const username = usernameInput.value.trim();
-  if (findUser(username)) {
+  if (await findUser(username)) {
+    // console.log('returned true');
     addChat(username, username);
-  } else {
-    alert('Пользователь с таким именем не зарегистрирован');
+  }
+  else { 
+    // console.log('returned false');
   }
 });
+
 
 // При загрузке страницы
 window.onload = function () {

@@ -134,10 +134,12 @@ int main() {
             // подготовить ответ
             crow::json::wvalue response;
             if (Find(username)) {
-                response["status"] = "success";
+                // response["status"] = "success";
+                response["comment"] = "Приятного общения :)";
                 res.code = 200;
             } else {
-                response["status"] = "failure";
+                // response["status"] = "failure";
+                response["comment"] = "Пользователь с таким именем не зарегистрирован";
                 res.code = 409;
             }
             res.body = response.dump();
