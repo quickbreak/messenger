@@ -5,8 +5,9 @@
 
 namespace chat
 {
-    ChatDatabase::ChatDatabase(const std::string& connection_string)
-        : connection_string_(connection_string), db_connection_(nullptr) 
+    ChatDatabase::ChatDatabase(const std::string& connection_string): 
+        connection_string_(connection_string), 
+        db_connection_(nullptr) 
     {}
 
 
@@ -15,7 +16,7 @@ namespace chat
         // тогда его нужно установить заново. Семён Семёныч!!
         if (!this->db_connection_ || !this->db_connection_->is_open()) {
             this->db_connection_ = std::make_unique<pqxx::connection>(this->connection_string_);
-            std::cout << "Reconnected to the database.\n";
+            std::cout << "ChatDatabase::EnsureConnection: Reconnected to the database.\n";
         }
     }
 
@@ -32,7 +33,7 @@ namespace chat
             transaction.exec_params(query, from, to, content);
             transaction.commit();
         } catch (const std::exception& e) {
-            std::cerr << "Database error: " << e.what() << '\n';
+            std::cerr << "ChatDatabase::InsertMessage error: " << e.what() << '\n';
             throw;
         }
     }
@@ -63,7 +64,7 @@ namespace chat
 
             return std::move(SerializeMessages(messages));
         } catch (const std::exception& e) {
-            std::cerr << "Database error: " << e.what() << '\n';
+            std::cerr << "ChatDatabase::GetMessagesForUser error: " << e.what() << '\n';
             throw;
         }
     }
@@ -79,6 +80,7 @@ namespace chat
         )";
 
         try {
+            EnsureConnection(); 
             pqxx::work transaction(*db_connection_);
             pqxx::result result = transaction.exec_params(query, user1, user2);
             transaction.commit();
@@ -95,7 +97,7 @@ namespace chat
 
             return std::move(SerializeMessages(messages));
         } catch (const std::exception& e) {
-            std::cerr << "Database error :" << e.what() << '\n';
+            std::cerr << "ChatDatabase::GetMessagesBetweenUsers error :" << e.what() << '\n';
             throw;
         }
         
@@ -110,9 +112,13 @@ namespace chat
         )";      
 
         try {
+            EnsureConnection(); 
+            std::cout << "I`m in ChatDatabase::GetChatsList\n";
             pqxx::work transaction(*db_connection_);
+            std::cout << "I`m in ChatDatabase::GetChatsList. Транзакция создана\n";
             pqxx::result result = transaction.exec_params(query, username);
             transaction.commit();
+            std::cout << "I`m in ChatDatabase::GetChatsList. Операция выполнена\n";
 
             std::vector<Chat> chats;
             for (const auto& row : result) {
@@ -125,7 +131,7 @@ namespace chat
             }
             return std::move(SerializeChats(chats));
         } catch (const std::exception& e) {
-            std::cerr << "Database error: " << e.what() << '\n';
+            std::cerr << "ChatDatabase::GetChatsList error: " << e.what() << '\n';
             throw;
         }
     }
@@ -139,12 +145,13 @@ namespace chat
         )";
 
         try {
+            EnsureConnection(); 
             pqxx::work transaction(*db_connection_);
             transaction.exec_params(query, user1, user2);
             transaction.commit();
             return;
         } catch (const std::exception& e) {
-            std::cerr << "Database error: " << e.what() << '\n';
+            std::cerr << "ChatDatabase::DeleteMessagesBetweenUsers error: " << e.what() << '\n';
             throw;
         }
     }
