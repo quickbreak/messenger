@@ -19,8 +19,8 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(/auth_build/Crow/include)
 
 set (SRC
-    crow_http.cpp
-    auth.cpp
+    ./src/crow_http.cpp
+    ./src/auth.cpp
 )
 
 add_executable (http_server ${SRC})

@@ -22,8 +22,9 @@ RUN apt update && \
 # RUN cp -r Crow/include /usr/local/include
 # RUN ls /usr/local/include && \
 #     echo "MIHAAAAA"
-# Скопируем исходники в контейнер                                                сейчас копируются исходники и мусор, надо создать src/
-ADD . /app
+# Скопируем исходники в контейнер
+COPY ./src /app/src
+COPY ./CMakeLists.txt /app
 
 # Установим рабочую директорию для сборки проекта
 WORKDIR /app/build
