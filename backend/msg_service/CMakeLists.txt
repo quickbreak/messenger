@@ -9,11 +9,11 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Boost REQUIRED COMPONENTS json)
 
 set (SRC
-    main.cpp
-    web_socket_server.cpp
-    web_socket_session.cpp
-    functions.cpp
-    connector.cpp
+    ./src/main.cpp
+    ./src/web_socket_server.cpp
+    ./src/web_socket_session.cpp
+    ./src/functions.cpp
+    ./src/connector.cpp
 )
 
 add_executable(chat_server ${SRC})

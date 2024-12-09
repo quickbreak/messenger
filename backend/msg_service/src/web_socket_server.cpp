@@ -6,7 +6,7 @@
 
 
 WebSocketServer::WebSocketServer(net::io_context &ioc, tcp::endpoint endpoint)
-    : acceptor_(ioc, endpoint), db_connector_("dbname=mydb user=postgres password=mypassword host=localhost port=5432")
+    : acceptor_(ioc, endpoint), db_connector_("dbname=mydb user=postgres password=mypassword host=db port=5432")
 {}
 
 

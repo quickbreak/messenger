@@ -8,18 +8,18 @@
 
 bool CheckAuth(const std::string& username, const std::string& password) {
     // std::cout << "Ошибка после входа в Check\n";
-    auth::AuthService connector = auth::AuthService("dbname=mydb user=postgres password=mypassword host=localhost port=5432");
+    auth::AuthService connector = auth::AuthService("dbname=mydb user=postgres password=mypassword host=db port=5432");
     return connector.Authenticate(username, password);
 }
 
 bool TryToReg(const std::string& username, const std::string& password) {
     // std::cout << "Ошибка после входа в TryToReg\n";
-    auth::AuthService connector = auth::AuthService("dbname=mydb user=postgres password=mypassword host=localhost port=5432");
+    auth::AuthService connector = auth::AuthService("dbname=mydb user=postgres password=mypassword host=db port=5432");
     return connector.Register(username, password);
 }
 
 bool Find(const std::string& username) {
-    auth::AuthService connector = auth::AuthService("dbname=mydb user=postgres password=mypassword host=localhost port=5432");
+    auth::AuthService connector = auth::AuthService("dbname=mydb user=postgres password=mypassword host=db port=5432");
     return connector.Find(username);
 }
 
