@@ -29,6 +29,22 @@ int main() {
     crow::App<crow::CORSHandler> app;
 
 
+    // Обработка GET-запроса на эндпоинт /
+    CROW_ROUTE(app, "/")
+    .methods(crow::HTTPMethod::GET)([] (const crow::request& req) {
+        std::cout << "Received GET request on /" << std::endl;
+
+        crow::response res;
+        // подготовить ответ
+        crow::json::wvalue response;
+        response["response"] = "Hello from auth_service running on :5000";
+        res.code = 200;
+        res.body = response.dump();
+        std::cout << "Replied with '{\"response\":\"Hello from auth_service running on :5000\"}'" << std::endl;
+        return res;
+    });
+
+
     // Обработка POST-запроса на эндпоинт /auth
     CROW_ROUTE(app, "/auth")
     .methods(crow::HTTPMethod::POST)([] (const crow::request& req) {
