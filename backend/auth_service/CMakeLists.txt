@@ -16,7 +16,7 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 # include_directories(${PQXX_INCLUDE_DIRS})
 # link_directories(${PQXX_LIBRARY_DIRS})
 
-include_directories(/auth_build/Crow/include)
+include_directories(/usr/local/include)
 
 set (SRC
     ./src/crow_http.cpp

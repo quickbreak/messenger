@@ -18,10 +18,11 @@ RUN apt update && \
     cd Crow && \
     mkdir build && cd build && \
     cmake .. -DCROW_BUILD_EXAMPLES=OFF -DCROW_BUILD_TESTS=OFF \
-    make install
-# RUN cp -r Crow/include /usr/local/include
-# RUN ls /usr/local/include && \
-#     echo "MIHAAAAA"
+    # почему-то это не срабатывает
+    make install && \
+    # и приходится копировать include вручную
+    cp -r Crow/include/* /usr/local/include
+
 # Скопируем исходники в контейнер
 COPY ./src /app/src
 COPY ./CMakeLists.txt /app
