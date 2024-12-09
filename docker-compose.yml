@@ -1,7 +1,3 @@
-networks:
-  chat-network:
-    driver: bridge
-
 services:
   db:
     build: ./db
@@ -29,4 +25,8 @@ services:
 volumes:
   db_pgdata:
     # это существующий volume, и я хочу, чтобы данные, добавленные в бд с этим volume, появились здесь 
+    external: true
+
+networks:
+  chat-network:
     external: true
