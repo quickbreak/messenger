@@ -31,12 +31,12 @@ services:
       - "5000:5000"
   
   msg_back:
-  build: ./backend/msg_service
-  container_name: chat_msg_back
-  networks:
-    - chat-network
-  ports:
-    - "5000:5000"
+    build: ./backend/msg_service
+    container_name: chat_msg_back
+    networks:
+      - chat-network
+    ports:
+      - "3000:3000"
 
 volumes:
   db_pgdata:

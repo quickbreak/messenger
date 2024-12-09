@@ -12,16 +12,15 @@ RUN apt update && \
       cmake \
       libpqxx-dev \
     # для Crow нужна asio
-      libasio-dev \ 
-    && \
-    git clone https://github.com/CrowCpp/Crow.git && \
+      libasio-dev
+RUN git clone https://github.com/CrowCpp/Crow.git && \
     cd Crow && \
     mkdir build && cd build && \
     cmake .. -DCROW_BUILD_EXAMPLES=OFF -DCROW_BUILD_TESTS=OFF \
     # почему-то это не срабатывает
-    make install && \
+    make install
     # и приходится копировать include вручную
-    cp -r Crow/include/* /usr/local/include
+RUN cp -r /auth_build/Crow/include/* /usr/local/include
 
 # Скопируем исходники в контейнер
 COPY ./src /app/src
