@@ -106,8 +106,10 @@ void WebSocketServer::GetChatsList(const std::string username, std::shared_ptr<W
     // отправить клиенту username список его чатов
     auto it = this->sessions_.left.find(username);
     if (it != this->sessions_.left.end()) { // если клиент ещё доступен, отправляем ему
+        std::cout << "I`m in WSServer::GetChatsList. Клиент ещё доступен, отправляем ему\n";
         it->second->SendMessage(json::serialize(obj));
     }
+    std::cerr << "I`m in WSServer::GetChatsList. Клиент не доступен / его нет в списке\n";
 }
 
 void WebSocketServer::HandleRequest(std::string request, std::shared_ptr<WebSocketSession>sender) {
