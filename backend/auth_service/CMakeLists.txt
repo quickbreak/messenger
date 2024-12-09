@@ -9,13 +9,14 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 # и теперь cmake сам находит его предположитель в /opt/vcpkg/include
 # а libpqxx я установил с apt-get install -y libpqxx-dev
 # include_directories(/opt/vcpkg/installed/x64-linux/include) 
-find_package(Crow)
+# find_package(Crow)
 # find_package(PkgConfig REQUIRED)
 # pkg_check_modules(PQXX REQUIRED libpqxx)
 
 # include_directories(${PQXX_INCLUDE_DIRS})
 # link_directories(${PQXX_LIBRARY_DIRS})
 
+include_directories(/auth_build/Crow/include)
 
 set (SRC
     crow_http.cpp
@@ -24,6 +25,6 @@ set (SRC
 
 add_executable (http_server ${SRC})
 
-target_link_libraries(http_server PRIVATE Crow::Crow pqxx pq)
+target_link_libraries(http_server PRIVATE pqxx pq)
 
 # g++ -o http_server crow_http.cpp auth.cpp -lpqxx -lpq
