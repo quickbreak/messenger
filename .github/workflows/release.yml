@@ -49,18 +49,6 @@ jobs:
       - name: Install Docker
         run: sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
       
-      # Проверка докер компоса      
-      - name: Test Docker Compose Plugin
-        run: docker compose version
-      # # Установка докер-компоса 
-      # - name: Install Docker Compose
-      #   run:  |
-      #     DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
-      #     mkdir -p $DOCKER_CONFIG/cli-plugins
-      #     curl -SL https://github.com/docker/compose/releases/download/v2.30.3/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
-      #     chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
-      #     docker compose version | echo
-      
       # Настройка переменных окружения
       - name: Set Environment Variables
         run: |
@@ -73,8 +61,7 @@ jobs:
       # Сборка проекта
       - name: Build Project
         run: |
-          docker-compose build
-          docker-compose up -d
-          # docker-compose exec <service_name> ./run_tests
+          docker compose build
+          docker compose up -d
           echo "running tests"
-          docker-compose down
+          docker compose down
