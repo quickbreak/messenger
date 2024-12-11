@@ -2,24 +2,33 @@
 #include <crow/middlewares/cors.h>
 
 #include <iostream>
+#include <cstdlib>
 
 #include "./auth.hpp"
 
 
+const char* db_name = std::getenv("DB_NAME");
+const char* db_user = std::getenv("DB_USER");
+const char* db_password = std::getenv("DB_PASSWORD");
+const char* db_host = std::getenv("DB_HOST");
+const char* db_port = std::getenv("DB_PORT");
+const std::string connection_string = "dbname=" + std::string(db_name) + " user=" + std::string(db_user) + " password=" + std::string(db_password) + " host=" + std::string(db_host) + " port=" + std::string(db_port);
+
+
 bool CheckAuth(const std::string& username, const std::string& password) {
     // std::cout << "Ошибка после входа в Check\n";
-    auth::AuthService connector = auth::AuthService("dbname=mydb user=postgres password=mypassword host=db port=5432");
+    auth::AuthService connector = auth::AuthService(connection_string);
     return connector.Authenticate(username, password);
 }
 
 bool TryToReg(const std::string& username, const std::string& password) {
     // std::cout << "Ошибка после входа в TryToReg\n";
-    auth::AuthService connector = auth::AuthService("dbname=mydb user=postgres password=mypassword host=db port=5432");
+    auth::AuthService connector = auth::AuthService(connection_string);
     return connector.Register(username, password);
 }
 
 bool Find(const std::string& username) {
-    auth::AuthService connector = auth::AuthService("dbname=mydb user=postgres password=mypassword host=db port=5432");
+    auth::AuthService connector = auth::AuthService(connection_string);
     return connector.Find(username);
 }
 

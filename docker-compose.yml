@@ -4,10 +4,6 @@ services:
     container_name: chat_db_container
     ports:
       - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
     volumes:
       # - ./postgres-data:/var/lib/postgresql/data так я бы написал, если бы делал это не с wsl. (а так не хватает прав)
       - db_pgdata:/var/lib/postgresql/data
@@ -29,6 +25,12 @@ services:
       - chat-network
     ports:
       - "5000:5000"
+    environment:
+      DB_HOST: $DB_HOST
+      DB_NAME: $DB_NAME
+      DB_USER: $DB_USER
+      DB_PASSWORD: $DB_PASSWORD
+      DB_PORT: $DB_PORT
   
   msg_back:
     build: ./backend/msg_service
@@ -37,6 +39,12 @@ services:
       - chat-network
     ports:
       - "3000:3000"
+    environment:
+      DB_HOST: $DB_HOST
+      DB_NAME: $DB_NAME
+      DB_USER: $DB_USER
+      DB_PASSWORD: $DB_PASSWORD
+      DB_PORT: $DB_PORT
 
 volumes:
   db_pgdata:

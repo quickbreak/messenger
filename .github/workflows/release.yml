@@ -1,0 +1,63 @@
+name: 'chat CI'
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+    
+    steps:
+      # Клонирование репозитория
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      
+      # Настройка apt для установки докера
+      - name: Get APT Ready
+        run: |
+          # Add Docker's official GPG key:
+          sudo apt-get update
+          sudo apt-get install ca-certificates curl
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+          # Add the repository to Apt sources:
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+      
+      # Установка докера
+      - name: Install Docker
+        run: sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      
+      # Настройка переменных окружения
+      - name: Set Environment Variables
+        run: |
+            export DB_HOST=$DB_HOST
+            export DB_NAME=$DB_NAME
+            export DB_USER=$DB_USER
+            export DB_PASSWORD=$DB_PASSWORD
+            export DB_PORT=$DB_PORT
+
+      # Сборка проекта
+      - name: Build Project
+        run: |
+          docker-compose build
+          docker-compose up -d
+          # docker-compose exec <service_name> ./run_tests
+          echo "running tests"
+          docker-compose down

@@ -5,8 +5,16 @@
 #include <boost/json.hpp>
 
 
+const char* db_name = std::getenv("DB_NAME");
+const char* db_user = std::getenv("DB_USER");
+const char* db_password = std::getenv("DB_PASSWORD");
+const char* db_host = std::getenv("DB_HOST");
+const char* db_port = std::getenv("DB_PORT");
+const std::string connection_string = "dbname=" + std::string(db_name) + " user=" + std::string(db_user) + " password=" + std::string(db_password) + " host=" + std::string(db_host) + " port=" + std::string(db_port);
+
+
 WebSocketServer::WebSocketServer(net::io_context &ioc, tcp::endpoint endpoint)
-    : acceptor_(ioc, endpoint), db_connector_("dbname=mydb user=postgres password=mypassword host=db port=5432")
+    : acceptor_(ioc, endpoint), db_connector_(connection_string)
 {}
 
 
