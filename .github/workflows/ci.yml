@@ -24,6 +24,30 @@ jobs:
           submodules: true
       
 
+      # Восстановление кэша Boost
+      - name: Restore Boost Cache
+        id: cache-boost
+        uses: actions/cache@v3
+        with:
+          path: /usr/local/boost_1_85_0
+          key: ${{ runner.os }}-boost-1.85.0
+          restore-keys: |
+            ${{ runner.os }}-boost-
+
+      # Установка Boost, если кэш отсутствует
+      - name: Install Boost
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        run: |
+          apt update
+          apt install -y build-essential python3 libbz2-dev libz-dev libicu-dev
+          wget https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_1_85_0.tar.bz2
+          tar xf boost_1_85_0.tar.bz2
+          cd boost_1_85_0
+          ./bootstrap.sh
+          ./b2
+          ./b2 install --prefix=/usr/local/boost_1_85_0
+
+
       # Удаление пакетов, способных вызвать конфликт с докером
       - name: Uninstall Conflicting Packages
         run: for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
@@ -59,9 +83,21 @@ jobs:
             export DB_PORT=$DB_PORT
 
       # Сборка проекта
-      - name: Build Project
+      - name: Build
         run: |
           docker compose build
+
+      # Запуск
+      - name: Compose Up
+        run: |
           docker compose up -d
+
+      # Тестирование
+      - name: Testing
+        run: |
           echo "running tests"
+      
+      # Остановка
+      - name: Compose Down
+        run: |
           docker compose down
