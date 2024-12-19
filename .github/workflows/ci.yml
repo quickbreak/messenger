@@ -38,14 +38,14 @@ jobs:
       - name: Install Boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
         run: |
-          apt update
-          apt install -y build-essential python3 libbz2-dev libz-dev libicu-dev
+          sudo apt update
+          sudo apt install -y build-essential python3 libbz2-dev libz-dev libicu-dev
           wget https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_1_85_0.tar.bz2
           tar xf boost_1_85_0.tar.bz2
           cd boost_1_85_0
           ./bootstrap.sh
           ./b2
-          ./b2 install --prefix=/usr/local/boost_1_85_0
+          sudo ./b2 install --prefix=/usr/local/boost_1_85_0
 
 
       # Удаление пакетов, способных вызвать конфликт с докером
