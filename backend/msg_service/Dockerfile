@@ -25,9 +25,9 @@ RUN apt update && \
     # export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH && \
     # export CPLUS_INCLUDE_PATH=/usr/local/include:$CPLUS_INCLUDE_PATH 
 
-ENV BOOST_ROOT=/usr/local
-ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-ENV CPLUS_INCLUDE_PATH=/usr/local/include:$CPLUS_INCLUDE_PATH
+ENV BOOST_ROOT=/usr/local/boost_1_85_0
+ENV LD_LIBRARY_PATH=/usr/local/boost_1_85_0/lib:$LD_LIBRARY_PATH
+ENV CPLUS_INCLUDE_PATH=/usr/local/boost_1_85_0/include:$CPLUS_INCLUDE_PATH
 
 # Скопируем исходники в контейнер
 COPY ./src /app/src
@@ -37,7 +37,7 @@ COPY ./CMakeLists.txt /app
 WORKDIR /app/build
 
 # Выполним сборку нашего проекта
-RUN cmake .. -D BOOST_ROOT=/usr/local/include/boost && \
+RUN cmake .. -D BOOST_ROOT=/usr/local/boost_1_85_0/include/boost && \
     make
 
 
