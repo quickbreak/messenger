@@ -1,49 +1,22 @@
-# Сборка ---------------------------------------
+# Взять образ со скачанной crow
+FROM quickbreak/crow-image:latest
 
-# В качестве базового образа для сборки используем gcc:latest
-FROM gcc:latest AS build
-
-# Установим рабочую директорию для сборки auth_service
-WORKDIR /auth_build
-
-# Скачаем все необходимые пакеты
-RUN apt update && \
-    apt install -y \
+# Скачать pqxx
+RUN apt update && apt install -y \
       cmake \
-      libpqxx-dev \
-    # для Crow нужна asio
-      libasio-dev
-RUN git clone https://github.com/CrowCpp/Crow.git && \
-    cd Crow && \
-    mkdir build && cd build && \
-    cmake .. -DCROW_BUILD_EXAMPLES=OFF -DCROW_BUILD_TESTS=OFF \
-    # почему-то это не срабатывает
-    make install
-    # и приходится копировать include вручную
-RUN cp -r /auth_build/Crow/include/* /usr/local/include
+      libpqxx-dev
 
 # Скопируем исходники в контейнер
 COPY ./src /app/src
 COPY ./CMakeLists.txt /app
 
-# Установим рабочую директорию для сборки проекта
+# Установить рабочую директорию для сборки проекта
 WORKDIR /app/build
 
-# Выполним сборку нашего проекта
+# Выполнить сборку проекта
 RUN cmake .. && \
     make
 
 
-# Запуск ---------------------------------------
-
-# В качестве базового образа используем ubuntu:latest
-# FROM ubuntu:latest
-
-# Установим рабочую директорию нашего приложения
-# WORKDIR /app
-
-# Скопируем приложение со сборочного контейнера в рабочую директорию
-# COPY --from=build /app/build/http_server .
-
-# Установим точку входа
+# Установить точку входа
 CMD ["./http_server"]
