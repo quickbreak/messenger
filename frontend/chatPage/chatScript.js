@@ -1,6 +1,8 @@
-const host = process.env.MACHINE_HOST;
+const host = "176.108.250.18";
+
 let socket = null;
 let clientId = '';
+
 const chatList = document.getElementById('chatList');
 const chatTitle = document.getElementById('chatTitle');
 const chatItemTemplate = document.getElementById('chatItemTemplate');

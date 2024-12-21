@@ -1,4 +1,4 @@
-const host = process.env.MACHINE_HOST;
+const host = "176.108.250.18";
 
 let clientId = "";
 
