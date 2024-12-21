@@ -68,13 +68,8 @@ jobs:
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.VM_PORT }}
+          envs: DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT, MACHINE_HOST
           script: |
-            export DB_HOST=$DB_HOST
-            export DB_NAME=$DB_NAME
-            export DB_USER=$DB_USER
-            export DB_PASSWORD=$DB_PASSWORD
-            export DB_PORT=$DB_PORT
-            export MACHINE_HOST=$MACHINE_HOST
             if [ -z "$DB_HOST" ]; then
               echo "DB_HOST is not set"
               exit 1
