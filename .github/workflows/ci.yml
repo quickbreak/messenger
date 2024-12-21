@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-test-up-down:
+  build-test-deploy:
     runs-on: ubuntu-latest
 
     env:
