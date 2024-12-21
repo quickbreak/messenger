@@ -9,6 +9,10 @@ services:
       - db_pgdata:/var/lib/postgresql/data
     networks:
       - chat-network
+    environment:
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
 
   frontend:
     build: ./frontend
