@@ -1,4 +1,4 @@
-const host = 'localhost';
+const host = process.env.MACHINE_HOST;
 
 let clientId = "";
 

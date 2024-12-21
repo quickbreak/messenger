@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-test-up-down:
     runs-on: ubuntu-latest
 
     env:
@@ -15,6 +15,7 @@ jobs:
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_PORT: ${{ secrets.DB_PORT }}
+      MACHINE_HOST: ${{ secrets.VM_HOST }}
     
     steps:
       # Клонирование репозитория
@@ -25,7 +26,7 @@ jobs:
           submodules: true
 
       
-      # Подготовка докер (установка)
+      # Подготовка докера (установка)
       - 
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -40,6 +41,7 @@ jobs:
             export DB_USER=$DB_USER
             export DB_PASSWORD=$DB_PASSWORD
             export DB_PORT=$DB_PORT
+            export MACHINE_HOST=$MACHINE_HOST
 
           
       # Сборка проекта
@@ -48,20 +50,43 @@ jobs:
         run: |
           docker compose build
 
-      # Запуск
-      - 
-        name: Compose Up
-        run: |
-          docker compose up -d
 
       # Тестирование
       - 
         name: Testing
         run: |
           echo "running tests"
+          sleep 5
       
-      # Остановка
+      
+      # Деплой
       - 
-        name: Compose Down
-        run: |
-          docker compose down
+        name: Deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.VM_PORT }}
+          script: |
+            if [ -z "$DB_HOST" ]; then
+              echo "DB_HOST is not set"
+              exit 1
+            fi
+            export DB_HOST=$DB_HOST
+            export DB_NAME=$DB_NAME
+            export DB_USER=$DB_USER
+            export DB_PASSWORD=$DB_PASSWORD
+            export DB_PORT=$DB_PORT
+            export MACHINE_HOST=$MACHINE_HOST
+            if [ -z "$DB_HOST" ]; then
+              echo "DB_HOST is not set"
+              exit 1
+            fi
+            cd ~/messenger
+            sudo -E docker compose down
+            git checkout main
+            git pull origin main
+            sudo -E docker compose build
+            sudo -E docker compose up -d
+

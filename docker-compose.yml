@@ -20,7 +20,9 @@ services:
     ports:
       - "8080:80"
     networks:
-      - chat-network  
+      - chat-network
+    environment:
+      MACHINE_HOST: $MACHINE_HOST
 
   auth_back:
     build: ./backend/auth_service
