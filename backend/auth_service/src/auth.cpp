@@ -3,19 +3,8 @@
 
 namespace auth {
     AuthService::AuthService(const std::string& connection_string) : 
-        connection_string_(connection_string), 
-        db_connection_(nullptr)  
+        connection_string_(connection_string)
     {}
-
-
-    void AuthService::EnsureConnection() {
-        // если бд была перезапущена, соединение было разорвано
-        // тогда его нужно установить заново. Семён Семёныч!!
-        if (!this->db_connection_ || !this->db_connection_->is_open()) {
-            this->db_connection_ = std::make_unique<pqxx::connection>(this->connection_string_);
-            std::cout << "Reconnected to the database.\n";
-        }
-    }
 
 
     bool AuthService::Authenticate(const std::string& username, const std::string& password) {
@@ -25,8 +14,8 @@ namespace auth {
             WHERE username = $1
             )";
         try {
-            EnsureConnection();    
-            pqxx::work transaction(*db_connection_);
+            pqxx::connection db_connection(connection_string_);    
+            pqxx::work transaction(db_connection);
             pqxx::result result = transaction.exec_params(query, username);
             transaction.commit();
 
@@ -52,25 +41,30 @@ namespace auth {
         WHERE username = $1
         )";
         try {
-            EnsureConnection();    
-            pqxx::work transaction(*db_connection_);
+            pqxx::connection db_connection(connection_string_);    
+            pqxx::work transaction(db_connection);
+            // Проверяем, занят ли логин
             pqxx::result result = transaction.exec_params(check_query, username);
-            transaction.commit();
 
-            if (result.empty()) { // логин не занят, регистрируем нового пользователя
+            if (result.empty()) { // Логин не занят, регистрируем нового пользователя
                 const std::string register_query = R"(
                 INSERT INTO users 
                 (username, password)
                 VALUES ($1, $2)
                 )";
-
-                EnsureConnection();    
-                pqxx::work transaction(*db_connection_);
+ 
                 pqxx::result result = transaction.exec_params(register_query, username, password);
                 transaction.commit();
-                
+                /*
+                Коммит только после выполнения второго запроса: 
+                если данные изменятся между запросами 
+                (например, другой пользователь попытается зарегистрироваться с тем же именем),
+                атомарность транзакции обеспечит корректность операции.
+                */
                 return true; 
-            } else { // логин занят
+            } else { // Логин занят
+                transaction.abort();
+
                 return false;
             }
 
@@ -89,8 +83,8 @@ namespace auth {
         WHERE username = $1
         )";
         try {
-            EnsureConnection();    
-            pqxx::work transaction(*db_connection_);
+            pqxx::connection db_connection(connection_string_);    
+            pqxx::work transaction(db_connection);
             pqxx::result result = transaction.exec_params(check_query, username);
             transaction.commit();
 

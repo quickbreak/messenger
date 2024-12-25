@@ -44,10 +44,6 @@ namespace chat {
         void DeleteMessagesBetweenUsers(const std::string& user1, const std::string& user2);
 
     private:
-        /// @brief активное соединение с бд
-        std::unique_ptr<pqxx::connection> db_connection_;
-        /// @brief проверить соединение с бд
-        void EnsureConnection();
         /// @brief строка для соединения с бд
         std::string connection_string_;
         /// @brief преобразовать вектор Сообщений в JSON-array
