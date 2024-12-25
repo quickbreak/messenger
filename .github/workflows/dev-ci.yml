@@ -6,7 +6,7 @@ on:
       - dev
 
 jobs:
-  build-test-deploy:
+  build:
     runs-on: ubuntu-latest
 
     env:

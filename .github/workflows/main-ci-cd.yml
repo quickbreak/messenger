@@ -1,4 +1,4 @@
-name: 'messenger CI/CD'
+name: 'main messenger CI/CD Pipeline'
 
 on:
   pull_request:
@@ -31,18 +31,8 @@ jobs:
       - 
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
-      # Настройка переменных окружения
-      - 
-        name: Set Environment Variables
-        run: |
-            export DB_HOST=$DB_HOST
-            export DB_NAME=$DB_NAME
-            export DB_USER=$DB_USER
-            export DB_PASSWORD=$DB_PASSWORD
-            export DB_PORT=$DB_PORT
-            export MACHINE_HOST=$MACHINE_HOST
           
+      # Сборка непосредственно
       - 
         name: Build
         run: |
@@ -54,7 +44,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: .  # Путь к результатам сборки
+          path: ./build/  # Куда сохранить
 
   test:
     needs: build
@@ -67,6 +57,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+          # path: ./restored-artifacts/ # Куда скачать
 
       - 
         name: Testing
