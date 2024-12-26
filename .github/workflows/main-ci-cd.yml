@@ -1,12 +1,14 @@
-name: 'chat CI'
+name: 'main messenger CI/CD Pipeline'
 
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    types:
+      - closed
 
 jobs:
-  build-test-deploy:
+  build:
+    # Если PR был подтверждён (ветки смёржены)
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     env:
@@ -24,30 +26,50 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
       
       # Подготовка докера (установка)
       - 
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
           
-      # Сборка проекта
+      # Сборка непосредственно
       - 
         name: Build
         run: |
           docker compose build
 
+      # Сохранение артефактов сборки
+      - 
+        name: Save Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: ./build/  # Куда сохранить
 
-      # Тестирование
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Загрузка артефактов сборки
+      - 
+        name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          # path: ./restored-artifacts/ # Куда скачать
+
       - 
         name: Testing
         run: |
           echo "running tests"
           sleep 5
-      
-      
-      # Деплой
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
       - 
         name: Deploy
         uses: appleboy/ssh-action@v1.2.0
@@ -68,4 +90,3 @@ jobs:
             git pull origin main
             sudo -E docker compose build
             sudo -E docker compose up -d
-

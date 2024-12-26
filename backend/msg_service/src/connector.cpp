@@ -6,19 +6,8 @@
 namespace chat
 {
     ChatDatabase::ChatDatabase(const std::string& connection_string): 
-        connection_string_(connection_string), 
-        db_connection_(nullptr) 
+        connection_string_(connection_string)
     {}
-
-
-    void ChatDatabase::EnsureConnection() {
-        // если бд была перезапущена, соединение было разорвано
-        // тогда его нужно установить заново. Семён Семёныч!!
-        if (!this->db_connection_ || !this->db_connection_->is_open()) {
-            this->db_connection_ = std::make_unique<pqxx::connection>(this->connection_string_);
-            std::cout << "ChatDatabase::EnsureConnection: Reconnected to the database.\n";
-        }
-    }
 
 
     void ChatDatabase::InsertMessage(const std::string& from, const std::string& to, const std::string& content) {
@@ -28,8 +17,8 @@ namespace chat
         )";
         
         try {
-            EnsureConnection();    
-            pqxx::work transaction(*db_connection_);
+            pqxx::connection db_connection(connection_string_);    
+            pqxx::work transaction(db_connection);
             transaction.exec_params(query, from, to, content);
             transaction.commit();
         } catch (const std::exception& e) {
@@ -48,8 +37,8 @@ namespace chat
         )";
 
         try {
-            EnsureConnection();    
-            pqxx::work transaction(*db_connection_);
+            pqxx::connection db_connection(connection_string_);    
+            pqxx::work transaction(db_connection);
             pqxx::result result = transaction.exec_params(query, username);
             transaction.commit();
             std::vector<Message> messages;
@@ -80,8 +69,8 @@ namespace chat
         )";
 
         try {
-            EnsureConnection(); 
-            pqxx::work transaction(*db_connection_);
+            pqxx::connection db_connection(connection_string_);    
+            pqxx::work transaction(db_connection);
             pqxx::result result = transaction.exec_params(query, user1, user2);
             transaction.commit();
 
@@ -112,9 +101,9 @@ namespace chat
         )";      
 
         try {
-            EnsureConnection(); 
             std::cout << "I`m in ChatDatabase::GetChatsList\n";
-            pqxx::work transaction(*db_connection_);
+            pqxx::connection db_connection(connection_string_);    
+            pqxx::work transaction(db_connection);
             std::cout << "I`m in ChatDatabase::GetChatsList. Транзакция создана\n";
             pqxx::result result = transaction.exec_params(query, username);
             transaction.commit();
@@ -145,8 +134,8 @@ namespace chat
         )";
 
         try {
-            EnsureConnection(); 
-            pqxx::work transaction(*db_connection_);
+            pqxx::connection db_connection(connection_string_);    
+            pqxx::work transaction(db_connection);
             transaction.exec_params(query, user1, user2);
             transaction.commit();
             return;
