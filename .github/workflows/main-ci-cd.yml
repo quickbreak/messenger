@@ -1,14 +1,12 @@
 name: 'main messenger CI/CD Pipeline'
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
+    branches:
+      - main
 
 jobs:
   build:
-    # Если PR был подтверждён (ветки смёржены)
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     env:
@@ -38,26 +36,26 @@ jobs:
         run: |
           docker compose build
 
-      # Сохранение артефактов сборки
-      - 
-        name: Save Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./build/  # Куда сохранить
+      # # Сохранение артефактов сборки
+      # - 
+      #   name: Save Build Artifacts
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: build-artifacts
+      #     path: ./build/  # Куда сохранить
 
   test:
     needs: build
     runs-on: ubuntu-latest
     
     steps:
-      # Загрузка артефактов сборки
-      - 
-        name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          # path: ./restored-artifacts/ # Куда скачать
+      # # Загрузка артефактов сборки
+      # - 
+      #   name: Download Build Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: build-artifacts
+      #     # path: ./restored-artifacts/ # Куда скачать
 
       - 
         name: Testing
