@@ -97,7 +97,7 @@ namespace auth {
         } catch (const std::exception& e) {
             std::cerr << "AuthService::Authenticate error: " << e.what() << '\n';
             throw;
-            // throw std::runtime_error("Ошибка при регистрации: " + std::string(e.what()));
+            // throw std::runtime_error("Ошибка при поиске: " + std::string(e.what()));
         }
     };
 

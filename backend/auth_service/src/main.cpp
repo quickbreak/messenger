@@ -138,10 +138,10 @@ int main() {
     });
 
 
-    // Обработка GET-запроса на эндпоинт /reg
+    // Обработка GET-запроса на эндпоинт /find
     CROW_ROUTE(app, "/find")
     .methods(crow::HTTPMethod::GET)([] (const crow::request& req) {
-        std::cout << "Received GET request on /reg" << std::endl;
+        std::cout << "Received GET request on /find" << std::endl;
 
         crow::response res;
         try {
@@ -177,7 +177,7 @@ int main() {
     });
 
 
-    // std::cout << "Поехали!\n";
+    // std::cout << "Сервер будет запущен на порту 5000.\n";
     //crow::logger::setLogLevel(crow::LogLevel::Debug);
 
     // Запуск сервера на порту 5000
