@@ -7,8 +7,8 @@ int main()
     {
         net::io_context ioc;
         tcp::endpoint endpoint{tcp::v4(), 3000};
+        // std::cout << "Сервер будет запущен на http://0.0.0.0:3000\n";
         auto server = std::make_shared<WebSocketServer>(ioc, endpoint);
-        std::cout << "Starting the server at http://0.0.0.0:3000\n";
         server->AcceptConnection();
         ioc.run();
     }

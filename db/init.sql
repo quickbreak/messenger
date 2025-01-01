@@ -1,13 +1,16 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,         
-    username VARCHAR(255) NOT NULL UNIQUE, 
-    password VARCHAR(255) NOT NULL
+    username VARCHAR(255) NOT NULL UNIQUE,  -- ID пользователя
+    password VARCHAR(255) NOT NULL          -- пароль пользователя
 );
 
+DROP TABLE IF EXISTS messages;
 CREATE TABLE IF NOT EXISTS messages (
-    id SERIAL PRIMARY KEY,         
-    from_user VARCHAR(255) NOT NULL, 
-    to_user VARCHAR(255) NOT NULL,   
-    content TEXT NOT NULL,           
-    timestamp TIMESTAMP NOT NULL DEFAULT NOW() 
+    id SERIAL PRIMARY KEY,             -- Уникальный идентификатор сообщения
+    from_user_id INTEGER NOT NULL,     -- ID отправителя
+    to_user_id INTEGER NOT NULL,       -- ID получателя
+    content TEXT NOT NULL,             -- Текст сообщения
+    timestamp TIMESTAMP NOT NULL DEFAULT NOW(), -- Время отправки
+    FOREIGN KEY (from_user_id) REFERENCES users (id) ON DELETE CASCADE, -- Внешний ключ
+    FOREIGN KEY (to_user_id) REFERENCES users (id) ON DELETE CASCADE  -- Внешний ключ
 );

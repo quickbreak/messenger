@@ -6,7 +6,8 @@
 #include <boost/json.hpp>
 
 namespace chat {
-
+ 
+    
     struct Message {
         std::string from;
         std::string to;
@@ -20,6 +21,7 @@ namespace chat {
         {};
     };
 
+
     struct Chat {
         std::string id;
         std::string user1;
@@ -31,26 +33,32 @@ namespace chat {
         {};
     };
 
+
     class ChatDatabase {
     public:
         explicit ChatDatabase(const std::string& connection_string);
-
+        /// @brief Добавление сообщения в бд
+        /// @param from от кого сообщение
+        /// @param to кому сообщение
+        /// @param content сообщение 
         void InsertMessage(const std::string& from, const std::string& to, const std::string& content);
-        boost::json::array GetMessagesForUser(const std::string& username);
+        /// @brief Получение сообщений между двумя пользователями
+        /// @param user1 первый пользователь
+        /// @param user2 второй пользователь
+        /// @return История сообщений
         boost::json::array GetMessagesBetweenUsers(const std::string& user1, const std::string& user2);
+        /// @brief Получение списка чатов пользователя
+        /// @param username пользователь
+        /// @return Список чатов
         boost::json::array GetChatsList(const std::string& username);
-
-        // Удаление всех сообщений между двумя пользователями (опционально)
-        void DeleteMessagesBetweenUsers(const std::string& user1, const std::string& user2);
-
     private:
         /// @brief строка для соединения с бд
         std::string connection_string_;
-        /// @brief преобразовать вектор Сообщений в JSON-array
+        /// @brief Преобразование вектора Сообщений в JSON-array
         /// @param messages вектор Сообщений
         /// @return JSON-array
         boost::json::array SerializeMessages(const std::vector<Message>& messages);
-        /// @brief преобразовать вектор Чатов в JSON-array
+        /// @brief Преобразование вектора Чатов в JSON-array
         /// @param chats вектор Чатов
         /// @return JSON-array
         boost::json::array SerializeChats(const std::vector<Chat>& chats);
