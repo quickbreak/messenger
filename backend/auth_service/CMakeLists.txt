@@ -19,12 +19,12 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(/usr/local/include)
 
 set (SRC
-    ./src/crow_http.cpp
+    ./src/main.cpp
     ./src/auth.cpp
 )
 
-add_executable (http_server ${SRC})
+add_executable (auth_server ${SRC})
 
-target_link_libraries(http_server PRIVATE pqxx pq)
+target_link_libraries(auth_server PRIVATE pqxx pq)
 
 # g++ -o http_server crow_http.cpp auth.cpp -lpqxx -lpq

@@ -11,11 +11,11 @@ namespace chat
 
 
     void ChatDatabase::InsertMessage(const std::string& from, const std::string& to, const std::string& content) {
+        std::cout << "I`m in ChatDatabase::InsertMessage\n";
         std::string query = R"(
             INSERT INTO messages (from_user, to_user, content, timestamp)
             VALUES ($1, $2, $3, NOW())
         )";
-        
         try {
             pqxx::connection db_connection(connection_string_);    
             pqxx::work transaction(db_connection);

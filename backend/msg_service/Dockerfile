@@ -19,4 +19,4 @@ RUN cmake .. -D BOOST_ROOT=/usr/local/include/boost && \
 
 
 # Установить точку входа
-CMD ["./chat_server"]
+CMD ["./msg_server"]

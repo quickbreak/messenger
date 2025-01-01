@@ -1,14 +1,12 @@
 name: 'main messenger CI/CD Pipeline'
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
+    branches:
+      - main
 
 jobs:
   build:
-    # Если PR был подтверждён (ветки смёржены)
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     env:
@@ -35,7 +33,11 @@ jobs:
       # Сборка непосредственно
       - 
         name: Build
-        run: |
+        run: | 
+          if [ -z "$DB_HOST" ]; then
+            echo "DB_HOST is not set"
+            exit 1
+          fi
           docker compose build
 
       # # Сохранение артефактов сборки
@@ -80,10 +82,12 @@ jobs:
           port: ${{ secrets.VM_PORT }}
           envs: DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT, MACHINE_HOST
           script: |
-            if [ -z "$DB_HOST" ]; then
-              echo "DB_HOST is not set"
-              exit 1
-            fi
+            export DB_HOST=${{ secrets.DB_HOST }}
+            export DB_NAME=${{ secrets.DB_NAME }}
+            export DB_USER=${{ secrets.DB_USER }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export DB_PORT=${{ secrets.DB_PORT }}
+            export MACHINE_HOST=${{ secrets.VM_HOST }}
             cd ~/messenger
             sudo -E docker compose down
             git checkout main
