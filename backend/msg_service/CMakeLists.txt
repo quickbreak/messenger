@@ -16,9 +16,9 @@ set (SRC
     ./src/connector.cpp
 )
 
-add_executable(chat_server ${SRC})
+add_executable(msg_server ${SRC})
 
-target_link_libraries(chat_server Boost::json pqxx pq)
+target_link_libraries(msg_server Boost::json pqxx pq)
 
 # set(BOOST_INCLUDE_DIRS /opt/vcpkg/installed/x64-linux/include)
 # set(BOOST_LIB_DIR /opt/vcpkg/installed/x64-linux/lib)

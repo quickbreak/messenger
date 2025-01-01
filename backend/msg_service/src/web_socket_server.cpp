@@ -28,6 +28,15 @@ void WebSocketServer::CloseConnection(std::shared_ptr<WebSocketSession> session_
 }
 
 
+void WebSocketServer::CloseConnection(std::string username)
+{
+    auto it = this->sessions_.left.find(username);
+    if (it != this->sessions_.left.end()) {
+        this->sessions_.left.erase(it);
+    }
+}
+
+
 void WebSocketServer::BroadcastMessage(std::string message, std::shared_ptr<WebSocketSession>sender) 
 {
     // std::cerr << "I am in BroadcastMessage\n";
@@ -47,17 +56,22 @@ void WebSocketServer::BroadcastMessage(std::string message, std::shared_ptr<WebS
 namespace json = boost::json;
 
 void WebSocketServer::SendMessage(std::string request, std::shared_ptr<WebSocketSession>sender) {
-    // std::cerr << "I am in SendMessage\n";
+    std::cout << "I am in WebSocketServer::SendMessage\n";
     json::value parsed_json = json::parse(request);
     json::object obj = parsed_json.as_object();
     std::string received_message = obj["message"].as_string().c_str();
     std::cout << "Собственно сообщение: " << received_message << '\n';
     std::string from = obj["from"].as_string().c_str();
     std::string to = obj["to"].as_string().c_str();
-    //
     // записываем сообщение в бд
-    this->db_connector_.InsertMessage(from, to, received_message);
-    //
+    try {
+        this->db_connector_.InsertMessage(from, to, received_message);
+    }
+    catch (...) {
+        std::cout << "Ошибка в WebSocketServer::SendMessage:\n";
+        std::cout << "Ошибка при попытке записать сообщение в бд\n";
+    }
+    // 
     obj["message"] = functions::GenerateResponse(std::move(received_message));
     if (to == "all") {
         this->BroadcastMessage(std::move(json::serialize(obj)), sender);
@@ -69,20 +83,17 @@ void WebSocketServer::SendMessage(std::string request, std::shared_ptr<WebSocket
         } else {
             // на нет и суда нет
         }
-        /* фронт отобразит сообщение у адресанта, хватит пересылать туда-сюда
-        it = this->sessions_.left.find(from);
-        if (it != this->sessions_.left.end()) { // если клиент ещё доступен, отправляем ему
-            it->second->SendMessage(json::serialize(obj));
-        } else {
-            // на нет и суда нет
-        }
-        */
     } 
 }
 
 
 void WebSocketServer::Authorize(std::string username, std::shared_ptr<WebSocketSession>session_p) {
+    this->CloseConnection(username);
     this->sessions_.insert({username, session_p});
+    std::cout << "Список пользователей:\n";
+    for (const auto& [username, session_p] : this->sessions_.left) {
+        std::cout << username << ' ' << session_p << '\n';
+    }
     std::cerr << "+1 Authorized\n";
 }
 
@@ -116,12 +127,13 @@ void WebSocketServer::GetChatsList(const std::string username, std::shared_ptr<W
     if (it != this->sessions_.left.end()) { // если клиент ещё доступен, отправляем ему
         std::cout << "I`m in WSServer::GetChatsList. Клиент ещё доступен, отправляем ему\n";
         it->second->SendMessage(json::serialize(obj));
+    } else {
+        std::cerr << "I`m in WSServer::GetChatsList. Клиент не доступен / его нет в списке\n";
     }
-    std::cerr << "I`m in WSServer::GetChatsList. Клиент не доступен / его нет в списке\n";
 }
 
 void WebSocketServer::HandleRequest(std::string request, std::shared_ptr<WebSocketSession>sender) {
-    // std::cerr << "I am in HandleRequest\n";
+    std::cout << "I am in WebSocketServer::HandleRequest\n";
     json::value parsed_json = json::parse(request);
     json::object obj = parsed_json.as_object();
     std::string request_type = obj["request_type"].as_string().c_str();

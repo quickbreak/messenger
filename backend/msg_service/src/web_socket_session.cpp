@@ -45,6 +45,7 @@ void WebSocketSession::WriteMessage()
     }
     std::string message = std::move(responses_q_.front());
     responses_q_.pop();
+    std::cout << "Будет отправлено: " << message << std::endl;
     ws_.async_write(
         boost::asio::buffer(message),
         // * self - shared_ptr на this, чтобы не произошло
@@ -60,12 +61,12 @@ void WebSocketSession::WriteMessage()
             if (!ec) {
                 std::cout << "Отправлено: " << message << std::endl;
                 self->WriteMessage();
-            } else if (ec == boost::system::errc::not_connected || ec == websocket::error::closed) {
+            } else if (ec == boost::system::errc::not_connected || ec == websocket::error::closed || ec == boost::asio::error::operation_aborted) {
                 if (auto shared = self->server_.lock()) {                                                                         // CHECK
                     shared->CloseConnection(self);
                 }
             } else {
-                std::cerr << "Ошибка в WebSocketSession::write_message. Код: " << ec << " Сообщение: " << ec.message() << std::endl;
+                std::cerr << "Ошибка в WebSocketSession::WriteMessage:async_write. Код: " << ec << " Сообщение: " << ec.message() << std::endl;
             } 
         }
     );
@@ -80,18 +81,19 @@ void WebSocketSession::ReadMessage()
                 std::cout << "Получено сообщение: " << beast::make_printable(self->buffer_.data()) << std::endl;
                 std::string request = std::string(
                     boost::asio::buffer_cast<const char*>(self->buffer_.data()),
-                    self->buffer_.size());
+                    self->buffer_.size()
+                );
 
                 // формируем ответ и отправляем его
                 // std::string response = functions::HandleRequest(std::move(received_message));
                 // self->server_->BroadcastMessage(std::move(response), self); // больше мы response не используем
                 if (auto shared = self->server_.lock()) {
-                    std::cerr << "I am in ReadMessage\n";
+                    std::cout << "I am in WebSocketSession::ReadMessage\n";
                     shared->HandleRequest(std::move(request), self);
                     self->buffer_.consume(bytes_received); // очищаем буфер после обработки
                     self->ReadMessage(); // читаем следующее сообщение
                 } else {
-                    std::cerr << "Error in ReadMessage\n";
+                    std::cerr << "Ошибка в WebSocketSession::ReadMessage: WebSocketServer сервер недоступен\n";
                 }
                 
             } else if (ec == boost::system::errc::not_connected || ec == websocket::error::closed) {
@@ -99,7 +101,7 @@ void WebSocketSession::ReadMessage()
                     shared->CloseConnection(self);
                 }
             } else {
-                std::cerr << "Ошибка в WebSocketSession::send_message. Код: " << ec << " Сообщение: " << ec.message() << std::endl;
+                std::cerr << "Ошибка в WebSocketSession::ReadMessage. Код: " << ec << " Сообщение: " << ec.message() << std::endl;
             } 
         }
     );

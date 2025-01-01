@@ -64,4 +64,7 @@ private:
     /// @param username имя пользователя
     /// @param session_p указатель на объект сессии
     void GetChatsList(std::string username, std::shared_ptr<WebSocketSession>session_p);
+    /// @brief закрыть соединение
+    /// @param username с каким пользователем
+    void CloseConnection(std::string username);
 };

@@ -19,4 +19,4 @@ RUN cmake .. && \
 
 
 # Установить точку входа
-CMD ["./http_server"]
+CMD ["./auth_server"]
