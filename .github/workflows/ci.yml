@@ -1,4 +1,4 @@
-name: 'dev messenger CI Pipeline'
+name: 'messenger CI Pipeline'
 
 on:
   # Будет запускаться после любых действий, связанных с пулл-реквестами. 
