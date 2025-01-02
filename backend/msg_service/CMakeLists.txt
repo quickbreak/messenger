@@ -12,7 +12,7 @@ set (SRC
     ./src/main.cpp
     ./src/web_socket_server.cpp
     ./src/web_socket_session.cpp
-    ./src/functions.cpp
+    ./src/bimap.cpp
     ./src/connector.cpp
 )
 

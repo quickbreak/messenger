@@ -1,6 +1,5 @@
 #include "web_socket_session.hpp"
 #include "web_socket_server.hpp"
-#include "functions.hpp"
 
 #include <iostream>
 
