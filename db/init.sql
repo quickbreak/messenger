@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL          -- пароль пользователя
 );
 
-DROP TABLE IF EXISTS messages;
 CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,             -- Уникальный идентификатор сообщения
     from_user_id INTEGER NOT NULL,     -- ID отправителя
